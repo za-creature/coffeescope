@@ -1,0 +1,56 @@
+# coffeescope2
+
+[![Circle CI](https://circleci.com/gh/za-creature/coffeescope2/tree/master.svg?style=shield)](https://circleci.com/gh/za-creature/coffeescope2/tree/master)
+[![Dependencies](https://david-dm.org/za-creature/coffeescope2.svg)](https://david-dm.org/za-creature/coffeescope2)
+[![Dev Dependencies](https://david-dm.org/za-creature/coffeescope2/dev-status.svg)](https://david-dm.org/za-creature/coffeescope2#info=devDependencies)
+[![Coverage Status](https://img.shields.io/coveralls/za-creature/coffeescope2.svg)](https://coveralls.io/github/za-creature/coffeescope2?branch=master)
+
+[coffeelint](http://www.coffeelint.org/) plugin that handles variables and
+their scope. It can detect:
+
+* attempting to access an undefined variable
+* overwriting or shadowing a variable from an outer scope
+* unused variables and arguments
+
+## Table of Contents
+
+* [Installation](#installation)
+* [License: MIT](#license)
+
+## Installation
+
+Add coffeescope to your project's dependencies
+
+```bash
+npm install --save coffeescope2
+```
+
+Insert this somewhere into your `coffeelint.json` file (I keep my custom rules at the bottom:
+
+```
+"check_scope": {
+    "module": "coffeescope2",
+    "level": "warn",
+    "environments": ["es5"],
+    "globals": {
+        "jQuery": false,
+        "MY_WRITABLE_SUPER_GLOBAL": true
+    },
+    "overwrite": true,
+    "shadow": true,
+    "shadow_exceptions": ["err", "next"],
+    "undefined": true,
+    "unused_variables": true,
+    "unused_arguments": false
+},
+```
+
+[Full list of options and values](index.coffee)
+
+[↑ Back to top](#table-of-contents)
+
+## License
+
+coffeescope2 is licensed under the [MIT license](LICENSE.md).
+
+[↑ Back to top](#table-of-contents)

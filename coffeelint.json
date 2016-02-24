@@ -1,0 +1,126 @@
+{
+    "arrow_spacing": {
+        "level": "warn"
+    },
+    "braces_spacing": {
+        "value": 0,
+        "level": "warn"
+    },
+    "camel_case_classes": {
+        "level": "warn"
+    },
+    "colon_assignment_spacing": {
+        "spacing": {
+            "left": 0,
+            "right": 1
+        },
+        "level": "warn"
+    },
+    "duplicate_key" : {
+        "level": "error"
+    },
+    "empty_constructor_needs_parens": {
+        "level": "error"
+    },
+    "ensure_comprehensions": {
+        "level": "ignore"
+    },
+    "eol_last": {
+        "level": "warn"
+    },
+    "indentation": {
+        "value": 4,
+        "level": "warn"
+    },
+    "line_endings": {
+        "value": "unix",
+        "level": "warn"
+    },
+    "max_line_length": {
+        "value": 79,
+        "level": "warn"
+    },
+    "newlines_after_classes": {
+        "value": 2,
+        "level": "ignore"
+    },
+    "no_backticks": {
+        "level": "warn"
+    },
+    "no_debugger": {
+        "level": "warn"
+    },
+    "no_empty_functions": {
+        "level": "error"
+    },
+    "no_empty_param_list": {
+        "level": "warn"
+    },
+    "no_implicit_parens": {
+        "level": "ignore"
+    },
+    "no_nested_string_interpolation": {
+        "level": "warn"
+    },
+    "no_private_function_fat_arrows": {
+        "level": "warn"
+    },
+    "no_stand_alone_at": {
+        "level": "warn"
+    },
+    "no_tabs": {
+        "level": "error"
+    },
+    "no_this": {
+        "level": "warn"
+    },
+    "no_throwing_strings": {
+        "level": "ignore"
+    },
+    "no_trailing_semicolons": {
+        "level": "warn"
+    },
+    "no_trailing_whitespace": {
+        "level": "warn"
+    },
+    "no_unnecessary_fat_arrows": {
+        "level": "warn"
+    },
+    "prefer_english_operator": {
+        "level": "error"
+    },
+    "space_operators": {
+        "level": "warn"
+    },
+    "spacing_after_comma": {
+        "level": "warn"
+    },
+
+    "advanced_colon_assignment_spacing": {
+        "module": "coffeelint-advanced-colon-assignment-spacing",
+        "level": "warn",
+        "spacing": {
+            "left": {
+                "min": 0,
+                "max": 0
+            },
+            "right": {
+                "min": 1,
+                "max": 1
+            }
+        }
+    },
+    "braces_padding": {
+        "module": "coffeelint-braces-padding",
+        "level": "warn",
+        "value": 0
+    },
+    "no_code_after_return": {
+        "module": "coffeelint-no-code-after-return",
+        "level": "error"
+    },
+    "prefer_double_quotes": {
+        "module": "coffeelint-prefer-double-quotes",
+        "level": "warn"
+    }
+}
