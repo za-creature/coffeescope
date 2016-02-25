@@ -107,7 +107,7 @@ module.exports = class ScopeLinter
                 @errors.push({
                     # context: node.locationData
                     lineNumber: node.locationData.first_line + 1
-                    message: "Overwriting variable \"#{name}\" (first defined
+                    message: "Overwriting identifier \"#{name}\" (first defined
                               on line #{written[0].first_line + 1})"
                 })
         else
@@ -133,9 +133,9 @@ module.exports = class ScopeLinter
                     # context: node.locationData
                     lineNumber: node.locationData.first_line + 1
                     message: if type is "Builtin"
-                        "Shadowing built-in variable \"#{name}\""
+                        "Shadowing built-in identifier \"#{name}\""
                     else
-                        "Shadowing variable \"#{name}\" (first defined on
+                        "Shadowing identifier \"#{name}\" (first defined on
                          line #{written[0].first_line + 1})"
                 })
 
