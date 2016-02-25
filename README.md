@@ -25,7 +25,8 @@ Add coffeescope to your project's dependencies
 npm install --save coffeescope2
 ```
 
-Insert this somewhere into your `coffeelint.json` file (I keep my custom rules at the bottom:
+Insert this somewhere into your `coffeelint.json` file (I keep my custom rules
+at the bottom):
 
 ```
 "check_scope": {
