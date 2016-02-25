@@ -1,5 +1,0 @@
-Foo = "true"
-
-
-(foo = class Foo) ->
-    undefined
