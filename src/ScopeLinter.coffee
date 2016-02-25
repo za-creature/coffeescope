@@ -71,7 +71,7 @@ module.exports = class ScopeLinter
                         @errors.push({
                             # context: location
                             lineNumber: location.first_line + 1
-                            message: "#{type} '#{name}' is never read (
+                            message: "#{type} \"#{name}\" is never read (
                                       first defined on line
                                       #{written[0].first_line + 1})"
                         })
@@ -91,7 +91,7 @@ module.exports = class ScopeLinter
             @errors.push({
                 # context: node.base.locationData
                 lineNumber: node.base.locationData.first_line + 1
-                message: "Undefined identifier '#{name}'"
+                message: "Undefined identifier \"#{name}\""
             })
 
     identifierAssigned: (node, name) =>
@@ -107,7 +107,7 @@ module.exports = class ScopeLinter
                 @errors.push({
                     # context: node.locationData
                     lineNumber: node.locationData.first_line + 1
-                    message: "Overwriting variable '#{name}' (first defined
+                    message: "Overwriting variable \"#{name}\" (first defined
                               on line #{written[0].first_line + 1})"
                 })
         else
@@ -133,9 +133,9 @@ module.exports = class ScopeLinter
                     # context: node.locationData
                     lineNumber: node.locationData.first_line + 1
                     message: if type is "Builtin"
-                        "Shadowing built-in variable '#{name}'"
+                        "Shadowing built-in variable \"#{name}\""
                     else
-                        "Shadowing variable '#{name}' (first defined on
+                        "Shadowing variable \"#{name}\" (first defined on
                          line #{written[0].first_line + 1})"
                 })
 
