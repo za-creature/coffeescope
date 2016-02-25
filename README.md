@@ -39,6 +39,7 @@ at the bottom):
     },
     "overwrite": true,
     "shadow": true,
+    "shadow_builtins": false,
     "shadow_exceptions": ["err", "next"],
     "undefined": true,
     "unused_variables": true,
