@@ -47,7 +47,7 @@ at the bottom):
 },
 ```
 
-[Full list of options and values](index.coffee)
+[Full list of options and values](src/index.coffee#L26)
 
 [↑ Back to top](#table-of-contents)
 
