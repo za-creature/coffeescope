@@ -34,6 +34,17 @@ describe "ScopeLinter/undefined", ->
         }).should.have.length(0)
 
 
+    it "allows recursion", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            foo = ->
+                foo()
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+
     it "ignores object literals", ->
         ScopeLinter.default().lint(nodes(
             """
