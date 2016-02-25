@@ -1,9 +1,9 @@
 # coffeescope2
 
-[![Circle CI](https://circleci.com/gh/za-creature/coffeescope2/tree/master.svg?style=shield)](https://circleci.com/gh/za-creature/coffeescope2/tree/master)
-[![Dependencies](https://david-dm.org/za-creature/coffeescope2.svg)](https://david-dm.org/za-creature/coffeescope2)
-[![Dev Dependencies](https://david-dm.org/za-creature/coffeescope2/dev-status.svg)](https://david-dm.org/za-creature/coffeescope2#info=devDependencies)
-[![Coverage Status](https://img.shields.io/coveralls/za-creature/coffeescope2.svg)](https://coveralls.io/github/za-creature/coffeescope2?branch=master)
+[![Circle CI](https://circleci.com/gh/za-creature/coffeescope/tree/master.svg?style=shield)](https://circleci.com/gh/za-creature/coffeescope/tree/master)
+[![Dependencies](https://david-dm.org/za-creature/coffeescope.svg)](https://david-dm.org/za-creature/coffeescope)
+[![Dev Dependencies](https://david-dm.org/za-creature/coffeescope/dev-status.svg)](https://david-dm.org/za-creature/coffeescope#info=devDependencies)
+[![Coverage Status](https://img.shields.io/coveralls/za-creature/coffeescope.svg)](https://coveralls.io/github/za-creature/coffeescope?branch=master)
 
 [coffeelint](http://www.coffeelint.org/) plugin that handles variables and
 their scope. It can detect:
