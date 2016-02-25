@@ -194,6 +194,32 @@ module.exports = class ScopeLinter extends Visitor
             @state = old
             return false
 
+        if node.constructor.name is "Try"
+            if node.errorVariable?
+                if node.errorVariable.constructor.name is "Literal"
+                    # work around coffeescript not producing Value nodes for
+                    # all types of error variables (simple ones are just stored
+                    # as Literal nodes)
+                    @identifierAssigned(node.errorVariable,
+                                        node.errorVariable.value)
+                else
+                    old = @state
+                    @state = @STATE_WRITE
+                    @currentDefinitions = []
+                    @definitions.push(@currentDefinitions)
+                    @walk(node.errorVariable)
+                    defined = @definitions.pop()
+                    @currentDefinitions = @definitions[@definitions.length - 1]
+                    for [node_, name] in defined
+                        @identifierAssigned(node_, name)
+                    @state = old
+            @walk(node.attempt)
+            if node.recovery?
+                @walk(node.recovery)
+            if node.ensure?
+                @walk(node.ensure)
+            return false
+
         if node.constructor.name is "Assign"
             old = @state
             @state = @STATE_WRITE

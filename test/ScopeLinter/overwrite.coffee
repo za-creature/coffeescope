@@ -87,6 +87,111 @@ describe "ScopeLinter/overwrite", ->
         }).should.have.length(7)
 
 
+    it "matches catch blocks", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            try
+                undefined
+            catch e
+                undefined
+            """
+        ), {
+            overwrite: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            e = "foo"
+            try
+                undefined
+            catch
+                undefined
+            """
+        ), {
+            overwrite: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            e = "foo"
+            try
+                undefined
+            finally
+                undefined
+            """
+        ), {
+            overwrite: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            e = "foo"
+
+            try
+                undefined
+            catch e
+                undefined
+            """
+        ), {
+            overwrite: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            e = "foo"
+
+            ->
+                try
+                    undefined
+                catch e
+                    undefined
+            """
+        ), {
+            overwrite: true
+        }).should.have.length(1)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            e = "foo"
+
+            try
+                undefined
+            catch e
+                undefined
+            """
+        ), {
+            overwrite: true
+            same_scope: true
+        }).should.have.length(1)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            e = "foo"
+
+            try
+                undefined
+            catch {e}
+                undefined
+            """
+        ), {
+            overwrite: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            e = "foo"
+
+            try
+                undefined
+            catch {e}
+                undefined
+            """
+        ), {
+            overwrite: true
+            same_scope: true
+        }).should.have.length(1)
+
+
     it "matches functions", ->
         ScopeLinter.default().lint(nodes(
             """
