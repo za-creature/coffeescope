@@ -5,7 +5,6 @@ Visitor = require "./Visitor"
 
 module.exports = class ScopeLinter extends Visitor
     STATE_READ: "read"
-    STATE_SHADOW: "shadow"
     STATE_WRITE: "write"
 
     @default: -> defaultLinter  # initialized on the bottom of the file
@@ -186,7 +185,7 @@ module.exports = class ScopeLinter extends Visitor
                 # types of args (simple ones are just stored as Literal nodes)
                 @currentDefinitions.push([node, node.name.value])
             else
-                @state = @STATE_SHADOW
+                @state = @STATE_WRITE
                 @walk(node.name)
                 @state = @STATE_READ
             if node.value?
