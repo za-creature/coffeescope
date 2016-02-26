@@ -200,6 +200,11 @@ module.exports = class ScopeLinter
         # regard acts like an assignment statement
         if node.variable? and node.variable.base.isAssignable()
             @identifierAssigned(node.variable, node.variable.base.value)
+            if @definitions?
+                # allow named classes that are part of assignment statements
+                # without requiring their names to be read
+                scope = @getScope(node.variable.base.value)
+                scope[node.variable.base.value].read = true
 
         # a class expression (named or otherwise) can be a part of an
         # existing assignment statement; when this happens the variable(s)

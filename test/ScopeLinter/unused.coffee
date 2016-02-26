@@ -51,6 +51,17 @@ describe "ScopeLinter/unused", ->
         }).should.have.length(1)
 
 
+    it "doesn't match named classes that are part of an assignment", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            Bar = class Foo
+            Bar
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+
     it "matches for loops", ->
         ScopeLinter.default().lint(nodes(
             """
