@@ -55,6 +55,18 @@ describe "ScopeLinter/undefined", ->
         }).should.have.length(0)
 
 
+    it "ignores regular expressions", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            /foo/
+            /foo/i
+            /foo/i.exec
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+
     it "matches implicit object literals", ->
         ScopeLinter.default().lint(nodes(
             """

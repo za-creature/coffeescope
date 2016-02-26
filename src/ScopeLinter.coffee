@@ -273,28 +273,31 @@ module.exports = class ScopeLinter
             @visit(node.ensure)
 
     visitValue: (node) =>
-        if node.base.constructor.name isnt "Literal"
-            # complex object (Arr or Obj)
-            node.eachChild(@visit)
-        else if node.isAssignable()
-            # is an identifier and not a constant...
-            name = node.base.value
+        if node.base.constructor.name is "Literal"
+            # simple object ...
+
+            if node.base.isAssignable()
+                # ... that is an identifier ...
+                name = node.base.value
+                if @reading or node.hasProperties()
+                    # an attempt (either direct or via a property or index) was
+                    # made to read a variable; this may result in an undefined
+                    # identifier error
+                    @identifierAccessed(node, name)
+                else
+                    # this results in either an overwrite or the shadowing of a
+                    # existing variable from an outer scope; both use def lists
+                    @definitions.push([node, name])
+
             if node.hasProperties()
-                # ... but may have been accesed as an array
+                # ... that may have been accesed as an array
                 for prop in node.properties
                     if prop.constructor.name is "Index"
                         @newState true, null, =>
                             @visit(prop)
-
-            if @reading or node.hasProperties()
-                # an attempt (either direct or via a property or index) was
-                # made to read a variable; this may result in an undefined
-                # identifier error
-                @identifierAccessed(node, name)
-            else
-                # this results in either an overwrite or the shadowing of an
-                # existing variable from an outer scope; both use def lists
-                @definitions.push([node, name])
+        else
+            # complex object (Arr or Obj)
+            node.eachChild(@visit)
 
     visit: (node) =>
         @depth++
