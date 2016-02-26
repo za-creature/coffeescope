@@ -103,7 +103,9 @@ module.exports = class ScopeLinter
                 # variable; a new value is created in the current scope instead
                 return @identifierShadowed(node, name)
 
-            if scope isnt @scope or @options["same_scope"]
+            if \
+                    @options["overwrite"] and
+                    (scope isnt @scope or @options["same_scope"])
                 @errors.push({
                     # context: node.locationData
                     lineNumber: node.locationData.first_line + 1

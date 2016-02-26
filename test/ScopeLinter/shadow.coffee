@@ -81,11 +81,12 @@ describe "ScopeLinter/shadow", ->
     it "matches classes and functions", ->
         ScopeLinter.default().lint(nodes(
             """
-            cb = cls = null
+            cb = null
+            class cls
 
             foo = (
                 cb = ->,
-                test = class cls
+                cls = "foo"
             ) ->
                 undefined
             """

@@ -277,6 +277,17 @@ describe "ScopeLinter/overwrite", ->
         }).should.have.length(1)
 
 
+    it "ignores out-of-scope overwrites when disabled", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            foo = "bar"
+            -> foo = "bar2"
+            """
+        ), {
+            overwrite: false
+        }).should.have.length(0)
+
+
     it "ignores shadowed variables", ->
         ScopeLinter.default().lint(nodes(
             """
