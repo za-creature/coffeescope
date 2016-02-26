@@ -84,12 +84,15 @@ module.exports = class Coffeescope2
                     This rule allows you to discourage code that relies on this
                     and prevents unintentional occurences. The default value is
                     <samp>true</samp> meaning assigning variables from an outer
-                    scope will issue a warning / error. The special value "all"
-                    will issue a warning if a variable is modified regardless
-                    of the scope it was defined in, effectively preventing
-                    reference mutation. In this regard, it forces all variables
-                    to behave similarly to the <code>const</code> keyword in
-                    ES6+.</dd>
+                    scope will issue a warning / error.
+
+                <dt><code>same_scope</code></dt>
+                <dd>A boolean representing whether to warn a variable is
+                    modified regardless of the scope it was defined in,
+                    effectively preventing reference mutation. In this regard,
+                    it forces all variables to behave similarly to the
+                    <code>const</code> keyword in ES6+. Defaults to
+                    <samp>false</samp>.</dd>
 
                 <dt><code>shadow</code></dt>
                 <dd>A boolean value that specifies whether shadowing existing
