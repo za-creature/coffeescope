@@ -36,6 +36,7 @@ module.exports = class ScopeLinter
             global = new Scope(builtin)
             @newScope global, =>
                 @visit(root)
+            @errors.sort((a, b) -> a.lineNumber - b.lineNumber)
             return @errors
         finally
             delete @options
