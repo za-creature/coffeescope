@@ -51,6 +51,18 @@ describe "ScopeLinter/unused", ->
         }).should.have.length(1)
 
 
+    it "matches recursive assignments", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            intervalId = setInterval ->
+              clearInterval intervalId
+            , 50
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+
     it "doesn't match named classes that are part of an assignment", ->
         ScopeLinter.default().lint(nodes(
             """

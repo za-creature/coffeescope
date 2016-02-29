@@ -17,4 +17,4 @@ describe "ScopeLinter", ->
             """
             hello world
             """
-        ))).should.throw(err)
+        ), {})).should.throw(err)

@@ -1,5 +1,6 @@
 "use strict"
-normalize = require "./globals"
+BuiltinScope = require "./BuiltinScope"
+Scope = require "./Scope"
 
 
 module.exports = class ScopeLinter
@@ -11,8 +12,13 @@ module.exports = class ScopeLinter
         # been completely visited.
         @scope = null
 
-        # a list of all available scopes; always ends with @scope
-        @scopes = []
+        # a list of functions (and classes) that should be evaluated in a
+        # separate sub-scope; initialized, visited and cleared by `newScope`
+        @subscopes = null
+
+        # whether a Value node is expected to read an existing value, or create
+        # a new variable (either by shadowing or overwriting)
+        @reading = true
 
         # a list of variable definitions to insert in the current scope;
         # created whenever a (possibly destructured) assignment is encountered
@@ -20,21 +26,17 @@ module.exports = class ScopeLinter
         # every time an Assign node has been completely visited.
         @definitions = null
 
-        # whether a Value node is expected to read an existing value, or create
-        # a new variable (either by shadowing or overwriting)
-        @reading = true
-
-        # the current AST depth
-        @depth = 0
+        undefined
 
     lint: (root, @options) =>
+        @errors = []
         try
-            @errors = []
-            @visit(root)
+            builtin = new BuiltinScope(@options["environments"],
+                                       @options["globals"])
+            global = new Scope(builtin)
+            @newScope global, =>
+                @visit(root)
             return @errors
-        catch e
-            @constructor.apply(this)  # revert linter to post-constructor state
-            throw e
         finally
             delete @options
             delete @errors
@@ -44,108 +46,48 @@ module.exports = class ScopeLinter
         # and restores the previous state when cb exists
         old = [@reading, @definitions]
         [@reading, @definitions] = [reading, definitions]
-        cb()
-        [@reading, @definitions] = old
+        try
+            cb()
+            undefined
+        finally
+            [@reading, @definitions] = old
 
-    newScope: (silent, cb) =>
-        # invokes `cb()` in a new empty scope and restores the previous scope
-        # when cb exists; if `silent` is falsy (default), all variables tha
-        # were defined in the scope are tested for access and an error is
-        # created for every variable that hasn't been read (as they become
-        # invisible to all other code)
-        if typeof silent is "function"
-            cb = silent
-            silent = false
+    newScope: (scope, cb) =>
+        # invokes `cb` in `scope`
+        old = [@scope, @subscopes]
+        @scope = scope
+        @subscopes = []
 
-        @scope = {}
-        @scopes.push(@scope)
-        cb()
-        scope = @scopes.pop()
-        @scope = @scopes[@scopes.length - 1] or null
+        try
+            cb()
+            @scope.commit()
 
-        if not silent
-            # ... and check it for for unused vars
-            for name, {type, read, written} of scope
-                if not read and @options["unused_#{type.toLowerCase()}s"]
-                    for location in written
-                        @errors.push({
-                            # context: location
-                            lineNumber: location.first_line + 1
-                            message: "#{type} \"#{name}\" is never read (
-                                      first defined on line
-                                      #{written[0].first_line + 1})"
-                        })
+            for node in @subscopes
+                # create a new function scope
+                fn = new Scope(@scope)
+                fn.identifierWritten("arguments", node)
+                fn.symbols["arguments"].type = "Builtin"
 
-    getScope: (name) =>
-        # Returns the nearest scope that contains a variable called `name`
-        for index in [@scopes.length - 1..0]
-            scope = @scopes[index]
-            if scope[name]?
-                return scope
+                @newScope fn, =>
+                    if node.params?
+                        for param in node.params
+                            @visit(param)
+                    @visit(node.body)
 
-    identifierAccessed: (node, name) =>
-        scope = @getScope(name)
-        if scope?
-            scope[name].read = true
-        else if @options["undefined"]
-            @errors.push({
-                # context: node.base.locationData
-                lineNumber: node.base.locationData.first_line + 1
-                message: "Undefined identifier \"#{name}\""
-            })
+            @scope.appendErrors(@errors, @options)
+            undefined
+        finally
+            [@scope, @subscopes] = old
 
-    identifierAssigned: (node, name) =>
-        scope = @getScope(name)
-        if scope?
-            {written, type} = scope[name]
-            if type is "Builtin"
-                # coffeescript provides no direct way to assign to a builtin
-                # variable; a new value is created in the current scope instead
-                return @identifierShadowed(node, name)
-
-            if \
-                    @options["overwrite"] and
-                    (scope isnt @scope or @options["same_scope"])
-                @errors.push({
-                    # context: node.locationData
-                    lineNumber: node.locationData.first_line + 1
-                    message: "Overwriting identifier \"#{name}\" (first defined
-                              on line #{written[0].first_line + 1})"
-                })
+    visit: (node) =>
+        handler = this["visit#{node.constructor.name}"]
+        if handler?
+            # assume the handler will visit its children
+            handler(node)
         else
-            # create new variable in current scope
-            @scope[name] = {
-                type: "Variable"
-                read: false
-                written: []
-            }
-            scope = @scope
-
-        scope[name].written.push(node.locationData)
-
-    identifierShadowed: (node, name) =>
-        scope = @getScope(name)
-        if \
-                scope? and \
-                @options["shadow"] and \
-                name not in (@options["shadow_exceptions"] or [])
-            {written, type} = scope[name]
-            if (type isnt "Builtin" or @options["shadow_builtins"])
-                @errors.push({
-                    # context: node.locationData
-                    lineNumber: node.locationData.first_line + 1
-                    message: if type is "Builtin"
-                        "Shadowing built-in identifier \"#{name}\""
-                    else
-                        "Shadowing identifier \"#{name}\" (first defined on
-                         line #{written[0].first_line + 1})"
-                })
-
-        @scope[name] = {
-            type: "Argument"
-            read: false
-            written: [node.locationData]
-        }
+            # walk through all child nodes
+            node.eachChild(@visit)
+        undefined
 
     visitAssignment: (destination, source, shadow = false) =>
         # handles a (potentially destructured) assignment; currently called by:
@@ -159,7 +101,7 @@ module.exports = class ScopeLinter
                 # work around coffeescript not producing Value nodes for all
                 # types of assignments (simple ones that are part of bigger
                 # statements are just stored as Literal nodes)
-                @definitions.push([destination, destination.value])
+                @definitions.push([destination.value, destination])
             else
                 @visit(destination)
 
@@ -172,82 +114,33 @@ module.exports = class ScopeLinter
             # assignment, find a variable matching that name in the nearest
             # scope and overwrite it, or create a new variable in the current
             # scope if no matches are found
-            for [node, name] in @definitions
-                if shadow
-                    @identifierShadowed(node, name)
-                else
-                    @identifierAssigned(node, name)
+            for [name, node] in @definitions
+                @scope.identifierWritten(name, node, shadow)
+        undefined
 
     visitAssign: (node) =>
         @visitAssignment(node.variable, node.value)
-
-    visitBlock: (node) =>
-        if @depth isnt 1
-            return node.eachChild(@visit)
-
-        # start of root block; create global scope
-        @newScope =>
-            globals = normalize(@options["environments"], @options["globals"])
-            for name of globals
-                @scope[name] = {
-                    type: "Builtin"
-                    written: [node.locationData]
-                }
-            node.eachChild(@visit)
+        undefined
 
     visitClass: (node) =>
         # a named class produces a variable in the local scope and in this
         # regard acts like an assignment statement
         if node.variable? and node.variable.base.isAssignable()
-            @identifierAssigned(node.variable, node.variable.base.value)
+            @scope.identifierWritten(node.variable.base.value, node.variable)
             if @definitions?
                 # allow named classes that are part of assignment statements
                 # without requiring their names to be read
-                scope = @getScope(node.variable.base.value)
-                scope[node.variable.base.value].read = true
+                @scope.identifierRead(node.variable.base.value,
+                                      node.variable.base)
 
-        # a class expression (named or otherwise) can be a part of an
-        # existing assignment statement; when this happens the variable(s)
-        # won't receive a scope until after the assignment statement is
-        # completed which means it won't be visible to inner functions
-        # to work around this, a faux scope is created that contains all of
-        # the variables that are supposed to be assigned in the parent node
-        @newScope true, =>
-            if @definitions?
-                for [node_, name] in @definitions
-                    @scope[name] = {
-                        type: "Variable"
-                        read: false
-                        written: [node_.locationData]
-                    }
-
-            @newState true, null, =>
-                if node.parent?
-                    @visit(node.parent)
-                @visit(node.body)
+        if node.parent?
+            @visit(node.parent)
+        @subscopes.push(node)
+        undefined
 
     visitCode: (node) =>
-        # if a function is defined as part of an assignment statement, a faux
-        # scope is created that contains all the current assignments to allow
-        # for recursive references
-        @newScope true, =>
-            if @definitions?
-                for [node_, name] in @definitions
-                    @scope[name] = {
-                        type: "Variable"
-                        read: false
-                        written: [node_.locationData]
-                    }
-
-            @newScope =>
-                @scope["arguments"] = {
-                    type: "Builtin"
-                    written: [node.locationData]
-                }
-
-                # visit the code as if not part of an assignment
-                @newState true, null, =>
-                    node.eachChild(@visit)
+        @subscopes.push(node)
+        undefined
 
     visitFor: (node) =>
         if node.name?
@@ -255,6 +148,7 @@ module.exports = class ScopeLinter
         if node.index?
             @visitAssignment(node.index)
         node.eachChild(@visit)
+        undefined
 
     visitObj: (node) =>
         # object property names may be literals but are always interpreted as
@@ -264,9 +158,11 @@ module.exports = class ScopeLinter
                 @visit(prop.value)
             else
                 @visit(prop)
+        undefined
 
     visitParam: (node) =>
         @visitAssignment(node.name, node.value, true)
+        undefined
 
     visitTry: (node) =>
         @visit(node.attempt)
@@ -276,6 +172,7 @@ module.exports = class ScopeLinter
             @visit(node.recovery)
         if node.ensure?
             @visit(node.ensure)
+        undefined
 
     visitValue: (node) =>
         if node.base.constructor.name is "Literal"
@@ -288,11 +185,11 @@ module.exports = class ScopeLinter
                     # an attempt (either direct or via a property or index) was
                     # made to read a variable; this may result in an undefined
                     # identifier error
-                    @identifierAccessed(node, name)
+                    @scope.identifierRead(name, node)
                 else
                     # this results in either an overwrite or the shadowing of a
                     # existing variable from an outer scope; both use def lists
-                    @definitions.push([node, name])
+                    @definitions.push([name, node])
 
             if node.hasProperties()
                 # ... that may have been accesed as an array
@@ -303,17 +200,7 @@ module.exports = class ScopeLinter
         else
             # complex object (Arr or Obj)
             node.eachChild(@visit)
-
-    visit: (node) =>
-        @depth++
-        handler = this["visit#{node.constructor.name}"]
-        if handler?
-            # assume the handler will visit its children
-            handler(node)
-        else
-            # walk through all child nodes
-            node.eachChild(@visit)
-        @depth--
+        undefined
 
 
 defaultLinter = new ScopeLinter()
