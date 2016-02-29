@@ -193,10 +193,13 @@ module.exports = class ScopeLinter
 
             if node.hasProperties()
                 # ... that may have been accesed as an array
-                for prop in node.properties
-                    if prop.constructor.name is "Index"
-                        @newState true, null, =>
+                @newState true, null, =>
+                    for prop in node.properties
+                        if prop.constructor.name is "Index"
                             @visit(prop)
+        else if node.base.constructor.name is "Call"
+            @newState true, null, =>
+                node.eachChild(@visit)
         else
             # complex object (Arr or Obj)
             node.eachChild(@visit)

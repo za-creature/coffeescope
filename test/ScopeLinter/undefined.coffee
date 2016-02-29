@@ -45,6 +45,17 @@ describe "ScopeLinter/undefined", ->
         }).should.have.length(1)
 
 
+    it "follows calls", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            foo(bar).type = "baz"
+            """
+        ), {
+            undefined: true
+            globals: {"foo": true}
+        }).should.have.length(1)
+
+
     it "allows recursion", ->
         ScopeLinter.default().lint(nodes(
             """
