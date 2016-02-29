@@ -34,6 +34,17 @@ describe "ScopeLinter/undefined", ->
         }).should.have.length(0)
 
 
+    it "creates subscope on no-assign", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            foo
+            -> foo = "bar"
+            """
+        ), {
+            undefined: true
+        }).should.have.length(1)
+
+
     it "allows recursion", ->
         ScopeLinter.default().lint(nodes(
             """
