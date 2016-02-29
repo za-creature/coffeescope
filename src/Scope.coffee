@@ -88,7 +88,7 @@ module.exports = class Scope
                 # attempt to read the current variable before it was defined
                 isBefore = (a, b) -> a.first_line < b.first_line or (
                     a.first_line is b.first_line and
-                    a.first_column < b.first_column
+                    a.first_column <= b.first_column
                 )
 
                 for {locationData} in nodes

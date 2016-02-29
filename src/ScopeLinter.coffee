@@ -129,12 +129,11 @@ module.exports = class ScopeLinter
         # a named class produces a variable in the local scope and in this
         # regard acts like an assignment statement
         if node.variable? and node.variable.base.isAssignable()
-            @scope.identifierWritten(node.variable.base.value, node.variable)
+            @scope.identifierWritten(node.variable.base.value, node)
             if @definitions?
                 # allow named classes that are part of assignment statements
                 # without requiring their names to be read
-                @scope.identifierRead(node.variable.base.value,
-                                      node.variable.base)
+                @scope.identifierRead(node.variable.base.value, node.variable)
 
         if node.parent?
             @visit(node.parent)
@@ -171,6 +170,14 @@ module.exports = class ScopeLinter
             else
                 @visit(prop)
         undefined
+
+    visitOp: (node) =>
+        # unary ops ++ and -- should perform both a read and a write
+        if node.operator in ["++", "--"]
+            @visitAssignment(node.first)
+            @visit(node.first)
+        else
+            node.eachChild(@visit)
 
     visitParam: (node) =>
         @visitAssignment(node.name, node.value, true)

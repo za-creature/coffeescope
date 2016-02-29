@@ -17,6 +17,40 @@ describe "ScopeLinter/overwrite", ->
         }).should.have.length(1)
 
 
+    it "matches ++ and --", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            foo++
+            """
+        ), {
+            overwrite: true
+            same_scope: true
+            hoist_local: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            --foo
+            """
+        ), {
+            overwrite: true
+            same_scope: true
+            hoist_local: false
+        }).should.have.length(1)
+
+
+    it "doesn't match other unary operators", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            !foo
+            """
+        ), {
+            overwrite: true
+            same_scope: true
+            hoist_local: true
+        }).should.have.length(0)
+
+
     it "matches classes", ->
         ScopeLinter.default().lint(nodes(
             """

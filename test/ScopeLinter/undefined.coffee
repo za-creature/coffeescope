@@ -34,6 +34,32 @@ describe "ScopeLinter/undefined", ->
         }).should.have.length(0)
 
 
+    it "matches unary operators", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            !foo
+            """
+        ), {
+            undefined: true
+        }).should.have.length(1)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            foo--
+            """
+        ), {
+            undefined: true
+        }).should.have.length(1)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            ++foo
+            """
+        ), {
+            undefined: true
+        }).should.have.length(1)
+
+
     it "creates subscope on no-assign", ->
         ScopeLinter.default().lint(nodes(
             """
