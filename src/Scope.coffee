@@ -2,8 +2,11 @@
 
 
 module.exports = class Scope
-    constructor: (@parent) ->
+    constructor: (@parent, options = {}) ->
         @symbols = {}
+        @options = {}
+        for own key, value of options
+            @options[key] = value
 
     local: (name, type = "Variable") =>
         if not @symbols[name]
@@ -59,10 +62,10 @@ module.exports = class Scope
             delete @symbols[name]
         undefined
 
-    appendErrors: (errors, options) =>
+    appendErrors: (errors) =>
         for name, {reads, writes, type, innerReads, innerWrites} of @symbols
             if not writes.length
-                if options["undefined"] then do ->
+                if @options["undefined"] then do ->
                     # issue an undefined variable error for every attempt to
                     # read it in the current scope; since this variable was
                     # never written in this scope, @getScopeOf will skip it so
@@ -99,22 +102,22 @@ module.exports = class Scope
                                   #{defined.first_line + 1}, column
                                   #{defined.first_column + 1})"})
 
-            if not options["hoist_local"]
+            if not @options["hoist_local"]
                 checkUsedBeforeDefined(reads)
 
-            if not options["hoist_parent"]
+            if not @options["hoist_parent"]
                 checkUsedBeforeDefined(innerReads)
 
-            if options["shadow"] then do (type, writes) =>
+            if @options["shadow"] then do (type, writes) =>
                 parent = @parent.getScopeOf(name)
                 if not parent?
                     return  # variable is not shadowing anything
 
                 {type, writes} = parent.symbols[name]
-                if type is "Builtin" and not options["shadow_builtins"]
+                if type is "Builtin" and not @options["shadow_builtins"]
                     return  # user doesn't want to be notified about this
 
-                for exception in options["shadow_exceptions"] or []
+                for exception in @options["shadow_exceptions"] or []
                     if (new RegExp("^#{exception}$")).test(name)
                         return  # variable is allowed to shadow
 
@@ -127,7 +130,7 @@ module.exports = class Scope
                          line #{writes[0].locationData.first_line + 1})"
                 })
 
-            if options["unused_#{type.toLowerCase()}s"] then do ->
+            if @options["unused_#{type.toLowerCase()}s"] then do ->
                 if reads.length or innerReads.length
                     return  # variable was used at least once
 
@@ -144,7 +147,7 @@ module.exports = class Scope
                             "#{type} \"#{name}\" is never used"
                     })
 
-            if options["overwrite"] then do ->
+            if @options["overwrite"] then do =>
                 checkOverwrite = (nodes) ->
                     for {locationData} in nodes
                         errors.push({
@@ -155,7 +158,7 @@ module.exports = class Scope
                                       1})"
                         })
 
-                if options["same_scope"]
+                if @options["same_scope"]
                     checkOverwrite(writes.slice(1))
                 checkOverwrite(innerWrites)
         undefined

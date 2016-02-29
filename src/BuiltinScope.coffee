@@ -6,7 +6,7 @@ Scope = require "./Scope"
 
 module.exports = class BuiltinScope extends Scope
     constructor: (envs = [], custom = {}) ->
-        super(null)
+        super(null, null)
 
         # argument handling
         custom["this"] = false  # `this` is always read-only

@@ -12,8 +12,9 @@ module.exports = class ScopeLinter
         # been completely visited.
         @scope = null
 
-        # a list of functions (and classes) that should be evaluated in a
-        # separate sub-scope; initialized, visited and cleared by `newScope`
+        # a list of functions that should be called in a separate sub-scope as
+        # soon as the current scope is completely visited;
+        # initialized, called and cleared by `newScope`
         @subscopes = null
 
         # whether a Value node is expected to read an existing value, or create
@@ -33,7 +34,7 @@ module.exports = class ScopeLinter
         try
             builtin = new BuiltinScope(@options["environments"],
                                        @options["globals"])
-            global = new Scope(builtin)
+            global = new Scope(builtin, @options)
             @newScope global, =>
                 @visit(root)
             @errors.sort((a, b) -> a.lineNumber - b.lineNumber)
@@ -63,19 +64,10 @@ module.exports = class ScopeLinter
             cb()
             @scope.commit()
 
-            for node in @subscopes
-                # create a new function scope
-                fn = new Scope(@scope)
-                fn.identifierWritten("arguments", node)
-                fn.symbols["arguments"].type = "Builtin"
+            for fn in @subscopes
+                @newScope(new Scope(@scope, @options), fn)
 
-                @newScope fn, =>
-                    if node.params?
-                        for param in node.params
-                            @visit(param)
-                    @visit(node.body)
-
-            @scope.appendErrors(@errors, @options)
+            @scope.appendErrors(@errors)
             undefined
         finally
             [@scope, @subscopes] = old
@@ -123,6 +115,16 @@ module.exports = class ScopeLinter
         @visitAssignment(node.variable, node.value)
         undefined
 
+    visitCall: (node) =>
+        if node.do
+            # part of a `do` statement; don't want to shadow in this context
+            @visitCode(node.variable, true)
+            for arg in node.args or []
+                @visit(arg)
+        else
+            node.eachChild(@visit)
+        undefined
+
     visitClass: (node) =>
         # a named class produces a variable in the local scope and in this
         # regard acts like an assignment statement
@@ -136,11 +138,20 @@ module.exports = class ScopeLinter
 
         if node.parent?
             @visit(node.parent)
-        @subscopes.push(node)
+        @subscopes.push =>
+            @visit(node.body)
         undefined
 
-    visitCode: (node) =>
-        @subscopes.push(node)
+    visitCode: (node, noShadow = false) =>
+        @subscopes.push =>
+            @scope.identifierWritten("arguments", node)
+            @scope.symbols["arguments"].type = "Builtin"
+            if noShadow
+                @scope.options["shadow"] = false
+
+            for param in node.params or []
+                @visit(param)
+            @visit(node.body)
         undefined
 
     visitFor: (node) =>

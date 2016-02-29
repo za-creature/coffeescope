@@ -29,6 +29,18 @@ describe "ScopeLinter/shadow", ->
         }).should.have.length(0)
 
 
+    it "allows do statements", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            foo = bar = "baz"
+            do (foo, bar) ->
+                undefined
+            """
+        ), {
+            shadow: true
+        }).should.have.length(0)
+
+
     it "matches destructured assignments", ->
         ScopeLinter.default().lint(nodes(
             """
