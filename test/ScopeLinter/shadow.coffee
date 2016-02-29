@@ -63,6 +63,28 @@ describe "ScopeLinter/shadow", ->
             shadow_exceptions: ["foo"]
         }).should.have.length(0)
 
+        ScopeLinter.default().lint(nodes(
+            """
+            foo = "bar"
+            (foo) ->
+                undefined
+            """
+        ), {
+            shadow: true
+            shadow_exceptions: ["f.."]
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            foo = "bar"
+            (foo) ->
+                undefined
+            """
+        ), {
+            shadow: true
+            shadow_exceptions: ["bar"]
+        }).should.have.length(1)
+
 
     it "matches multi-scope overwrites", ->
         ScopeLinter.default().lint(nodes(
