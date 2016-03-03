@@ -114,11 +114,31 @@ module.exports = class Coffeescope2
                 </dd>
 
                 <dt><code>shadow_exceptions</code></dt>
-                <dd>A list of strings that further customizes the behavior of
-                    <code>shadow</code> by allowing a list of argument names to
-                    be extempt from shadowing warnings. The default value is
-                    <samp>["err", "next"]</samp> to allow nesting of
-                    Node.JS-style continuations.</dd>
+                <dd>A list of regular expressions that further customizes the
+                    behavior of <code>shadow</code> by allowing one or more
+                    names to be extempt from shadowing warnings. The default
+                    value is <samp>["err", "next"]</samp> to allow nesting of
+                    Node.JS-style continuations. To be skipped, the name must
+                    match the entire expression:
+                    <ul>
+                        <li>
+                            <samp>"ba."</samp>
+                            will match
+                                <code>"bar"</code> and
+                                <code>"baz"</code>
+                            but not
+                                <code>"bard"</code> or
+                                <code>"foobar"</code>.
+                        </li>
+                        <li>
+                            <samp>"ba.*"</samp>
+                            will match
+                                <code>"ba"</code> and
+                                <code>"bar"</code> and
+                                <code>"bard"</code>.
+                        </li>
+                    </ul>
+                </dd>
 
                 <dt><code>undefined</code></dt>
                 <dd>A boolean value that specifies whether to raise a warning /
@@ -127,6 +147,20 @@ module.exports = class Coffeescope2
                     <samp>true</samp>. To work around framework-specific
                     messages, use <code>environments</code> and / or
                     <code>globals</code> instead.</dd>
+
+                <dt><code>hoist_local</code></dt>
+                <dd>A boolean value that specifies whether to warn about
+                relying on variable hosting to the top of their scope. The
+                default value is <samp>true</samp> because of coffeescript's
+                semantics. Changing it to false will start producing warnings
+                whenever you attempt to access a local variable before you
+                first assigned to it. We recommend switching this to
+                <samp>false</samp> as it results in easier to read code.</dd>
+
+                <dt><code>hoist_parent</code></dt>
+                <dd>Similar to <code>hoist_parent</code>, but it allows
+                referencing a variable before it was defined if it belongs to a
+                parent scope. The default value is <samp>true</samp>.</dd>
 
                 <dt><code>unused_variables</code></dt>
                 <dd>A boolean value that specifies whether to show a message if
