@@ -109,6 +109,9 @@ module.exports = class Scope
                 checkUsedBeforeDefined(innerReads)
 
             if @options["shadow"] then do (type, writes) =>
+                if type is "Builtin"
+                    return  # local builtins always shadow by design
+
                 parent = @parent.getScopeOf(name)
                 if not parent?
                     return  # variable is not shadowing anything

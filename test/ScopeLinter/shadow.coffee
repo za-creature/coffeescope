@@ -155,6 +155,20 @@ describe "ScopeLinter/shadow", ->
         }).should.have.length(2)
 
 
+    it "respects implicit builtins", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            foo = ->
+                bar = ->
+                    undefined
+            """
+        ), {
+            environments: ["commonjs"]
+            shadow: true
+            shadow_builtins: true
+        }).should.have.length(0)
+
+
     it "matches assignments to builtins when instructed", ->
         ScopeLinter.default().lint(nodes(
             """
