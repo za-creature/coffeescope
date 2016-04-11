@@ -1,6 +1,6 @@
 {
   "name": "coffeescope2",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "coffeelint plugin that handles variables and their scope",
   "keywords": [
     "coffee",
