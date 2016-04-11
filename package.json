@@ -17,12 +17,12 @@
   "author": "Radu Dan <za_creature@yahoo.com> (https://github.com/za-creature)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/za-creature/coffeescope2.git"
+    "url": "https://github.com/za-creature/coffeescope.git"
   },
   "bugs": {
-    "url": "https://github.com/za-creature/coffeescope2/issues"
+    "url": "https://github.com/za-creature/coffeescope/issues"
   },
-  "homepage": "https://github.com/za-creature/coffeescope2",
+  "homepage": "https://github.com/za-creature/coffeescope",
   "license": "MIT",
   "main": "lib",
   "scripts": {
