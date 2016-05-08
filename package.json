@@ -48,6 +48,7 @@
     "coffeelint-limit-newlines": "0.0.2",
     "coffeelint-no-code-after-return": "0.0.3",
     "coffeelint-prefer-double-quotes": "^0.1.0",
+    "coffeescope2": "latest",
     "coveralls": "^2.11.6",
     "istanbul": "^0.4.2",
     "mocha": "^2.4.5",

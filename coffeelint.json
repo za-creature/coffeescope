@@ -115,6 +115,21 @@
         "level": "warn",
         "value": 0
     },
+    "check_scope" : {
+        "module":"coffeescope2",
+        "level": "warn",
+        "environments": ["builtin","es5","browser","es6","node","mocha","shelljs","jquery"],
+        "globals": {},
+        "overwrite": false,
+        "shadow": false,
+        "shadow_builtins": false,
+        "shadow_exceptions": ["err", "next"],
+        "undefined": true,
+        "hoist_local": false,
+        "hoist_parent": true,
+        "unused_variables": true,
+        "unused_arguments": false
+    },
     "no_code_after_return": {
         "module": "coffeelint-no-code-after-return",
         "level": "error"
