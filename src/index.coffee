@@ -158,9 +158,10 @@ module.exports = class Coffeescope2
                 <samp>false</samp> as it results in easier to read code.</dd>
 
                 <dt><code>hoist_parent</code></dt>
-                <dd>Similar to <code>hoist_parent</code>, but it allows
-                referencing a variable before it was defined if it belongs to a
-                parent scope. The default value is <samp>true</samp>.</dd>
+                <dd>Similar to <code>hoist_local</code>, but it allows
+                referencing a variable before it was defined provided it
+                belongs (is written to) in a parent scope. The default value is
+                <samp>true</samp>.</dd>
 
                 <dt><code>unused_variables</code></dt>
                 <dd>A boolean value that specifies whether to show a message if

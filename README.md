@@ -25,8 +25,8 @@ Add coffeescope to your project's dependencies
 npm install --save coffeescope2
 ```
 
-Insert this somewhere into your `coffeelint.json` file (I keep my custom rules
-at the bottom):
+Insert this somewhere into your `coffeelint.json` file (I like to keep my
+custom rules at the bottom):
 
 ```
 "check_scope": {
@@ -34,8 +34,8 @@ at the bottom):
     "level": "warn",
     "environments": ["es5"],
     "globals": {
-        "jQuery": false,
-        "MY_WRITABLE_SUPER_GLOBAL": true
+        "jQuery": true,
+        "mocha": true
     },
     "overwrite": true,
     "shadow": true,
