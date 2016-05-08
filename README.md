@@ -42,6 +42,8 @@ custom rules at the bottom):
     "shadow_builtins": false,
     "shadow_exceptions": ["err", "next"],
     "undefined": true,
+    "hoist_local": true,
+    "hoist_parent": true,
     "unused_variables": true,
     "unused_arguments": false
 },

@@ -193,6 +193,8 @@ module.exports = class Coffeescope2
         shadow_exceptions: ["err", "next"]  # list of args that may be shadowed
 
         undefined: true  # warn when accessing an undefined variable
+        hoist_local: true  # allow same-scope hoisting
+        hoist_parent: true  # allow parent-scope hoisting
 
         unused_variables: true  # warn when a variable is not accessed
         unused_arguments: false  # warn when an argument is not accessed
