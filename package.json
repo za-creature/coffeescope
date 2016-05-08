@@ -27,7 +27,7 @@
   "main": "lib",
   "scripts": {
     "prepublish": "coffee -o lib -c src",
-    "lint": "coffeelint src/",
+    "lint": "coffeelint src/ && coffeelint test/",
     "test": "mocha",
     "test-all": "mocha --reporter mocha-junit-reporter test/",
     "coverage": "istanbul report lcov"

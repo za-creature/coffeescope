@@ -42,7 +42,7 @@ describe "BuiltinScope", ->
         spawn(["serviceworker", "worker"]).should.have.property("self")
 
 
-    it "always includes`this`", ->
+    it "always includes `this`", ->
         spawn().should.have.property("this")
         spawn("es3").should.have.property("this")
         spawn(["es5", "es6"]).should.have.property("this")
