@@ -35,7 +35,7 @@ custom rules at the bottom):
     "environments": ["es5"],
     "globals": {
         "jQuery": true,
-        "mocha": true
+        "$": true
     },
     "overwrite": true,
     "shadow": true,
