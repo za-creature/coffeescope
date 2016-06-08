@@ -73,3 +73,54 @@ describe "ScopeLinter/hoist", ->
             undefined: true
             hoist_parent: false
         }).should.have.length(1)
+
+
+    it "matches simple comprehensions", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            (x for x in [1,2,3])
+            """
+        ), {
+            undefined: true
+            hoist_local: false
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            (x for x in [1..x])
+            """
+        ), {
+            undefined: true
+            hoist_local: false
+        }).should.have.length(1)
+
+
+    it "matches nested comprehensions", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            (x + y for x in [1, 2, 3] for y in [1, 2, 3])
+            """
+        ), {
+            undefined: true
+            hoist_local: false
+        }).should.have.length(0)
+
+
+        ScopeLinter.default().lint(nodes(
+            """
+            (x + y for x in [1..y] for y in [1, 2, 3])
+            """
+        ), {
+            undefined: true
+            hoist_local: false
+        }).should.have.length(0)
+
+
+        ScopeLinter.default().lint(nodes(
+            """
+            (x + y for x in [1, 2, 3] for y in [1..x])
+            """
+        ), {
+            undefined: true
+            hoist_local: false
+        }).should.have.length(1)

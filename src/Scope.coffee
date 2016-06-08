@@ -23,11 +23,13 @@ module.exports = class Scope
         @local(name).reads.push(node)
         undefined
 
-    identifierWritten: (name, node, argument = false) =>
+    identifierWritten: (name, node, argument = false, comprehension = false) =>
         ref = @local(name)
         ref.writes.push(node)
         if argument
             ref.type = "Argument"
+        if comprehension
+            ref.comprehension = true
         undefined
 
     getScopeOf: (name) =>
@@ -82,6 +84,7 @@ module.exports = class Scope
                 continue
 
             defined = writes[0].locationData
+            comprehension = @symbols[name].comprehension?
 
             checkUsedBeforeDefined = (nodes) ->
                 # issue a used-before-undefined variable error for ever
@@ -92,8 +95,11 @@ module.exports = class Scope
                 )
 
                 for {locationData} in nodes
-                    if not isBefore(locationData, defined)
-                        break
+                    if isBefore(locationData, defined) is comprehension
+                        # comprehension vars need to be used strictly before
+                        # they are defined, whereas regular vars need to be
+                        # used afterwards
+                        continue
 
                     errors.push({
                         lineNumber: locationData.first_line + 1

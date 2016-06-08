@@ -82,7 +82,7 @@ module.exports = class ScopeLinter
             node.eachChild(@visit)
         undefined
 
-    visitAssignment: (destination, source, shadow = false) =>
+    visitAssignment: (destination, {source, shadow, comprehension} = {}) =>
         # handles a (potentially destructured) assignment; currently called by:
         # * visitAssign
         # * visitFor
@@ -108,11 +108,11 @@ module.exports = class ScopeLinter
             # scope and overwrite it, or create a new variable in the current
             # scope if no matches are found
             for [name, node] in @definitions
-                @scope.identifierWritten(name, node, shadow)
+                @scope.identifierWritten(name, node, shadow, comprehension)
         undefined
 
     visitAssign: (node) =>
-        @visitAssignment(node.variable, node.value)
+        @visitAssignment(node.variable, {source: node.value})
         undefined
 
     visitCall: (node) =>
@@ -154,10 +154,20 @@ module.exports = class ScopeLinter
         undefined
 
     visitFor: (node) =>
+        # because comprehensions compile to the same AST as regular for blocks
+        # we distinguish between the two by checking bounds: a comprehension's
+        # body has the same location as the node itself, whereas for a regular
+        # for, the body is contained within the for block
+        comprehension = true
+        for prop in ["first_line", "first_column", "last_line", "last_column"]
+            if node.locationData[prop] isnt node.body.locationData[prop]
+                comprehension = false
+                break
+
         if node.name?
-            @visitAssignment(node.name)
+            @visitAssignment(node.name, {comprehension})
         if node.index?
-            @visitAssignment(node.index)
+            @visitAssignment(node.index, {comprehension})
         node.eachChild(@visit)
         undefined
 
@@ -180,7 +190,7 @@ module.exports = class ScopeLinter
             node.eachChild(@visit)
 
     visitParam: (node) =>
-        @visitAssignment(node.name, node.value, true)
+        @visitAssignment(node.name, {source: node.value, shadow: true})
         undefined
 
     visitTry: (node) =>
