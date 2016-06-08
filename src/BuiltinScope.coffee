@@ -18,7 +18,7 @@ module.exports = class BuiltinScope extends Scope
 
         # populate builtin symbol table
         for env in envs
-            for name of env
+            for own name of env
                 @local(name).type = "Builtin"
         undefined
 

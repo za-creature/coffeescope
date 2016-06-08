@@ -3,7 +3,7 @@
 
 module.exports = class Scope
     constructor: (@parent, options = {}) ->
-        @symbols = {}
+        @symbols = Object.create(null)
         @options = {}
         for own key, value of options
             @options[key] = value

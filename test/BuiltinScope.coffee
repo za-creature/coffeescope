@@ -1,4 +1,6 @@
 "use strict"
+{expect} = require "chai"
+
 BuiltinScope = require "../src/BuiltinScope"
 
 
@@ -15,34 +17,34 @@ describe "BuiltinScope", ->
 
 
     it "accepts single environments", ->
-        spawn("es6").should.have.property("Promise")
+        expect(spawn("es6")).to.have.property("Promise")
 
 
     it "accepts single-value arrays", ->
-        spawn(["es6"]).should.have.property("Promise")
+        expect(spawn(["es6"])).to.have.property("Promise")
 
 
     it "merges multiple environments", ->
         result = spawn(["es6", "commonjs"])
 
-        result.should.have.property("Promise")
-        result.should.have.property("exports")
+        expect(result).to.have.property("Promise")
+        expect(result).to.have.property("exports")
 
 
     it "ignores invalid / unknown environments", ->
-        spawn("foo").should.have.property("this")
-        spawn(["foo", "bar"]).should.have.property("this")
-        spawn(["baz", "es6"]).should.have.property("Promise")
-        spawn(["foo"], {"bar": true}).should.have.property("bar")
+        expect(spawn("foo")).to.have.property("this")
+        expect(spawn(["foo", "bar"])).to.have.property("this")
+        expect(spawn(["baz", "es6"])).to.have.property("Promise")
+        expect(spawn(["foo"], {"bar": true})).to.have.property("bar")
 
 
     it "treats `custom` as a regular environment", ->
         spawn([], )
-        spawn("worker").should.have.property("self")
-        spawn(["serviceworker", "worker"]).should.have.property("self")
+        expect(spawn("worker")).to.have.property("self")
+        expect(spawn(["serviceworker", "worker"])).to.have.property("self")
 
 
     it "always includes `this`", ->
-        spawn().should.have.property("this")
-        spawn("es3").should.have.property("this")
-        spawn(["es5", "es6"]).should.have.property("this")
+        expect(spawn()).to.have.property("this")
+        expect(spawn("es3")).to.have.property("this")
+        expect(spawn(["es5", "es6"])).to.have.property("this")

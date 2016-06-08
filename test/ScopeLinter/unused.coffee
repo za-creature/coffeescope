@@ -164,3 +164,13 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_arguments: false
         }).should.have.length(0)
+
+
+    it "supports special symbol names", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            constructor = 123
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(1)
