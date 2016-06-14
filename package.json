@@ -46,7 +46,7 @@
     "coffeelint-advanced-colon-assignment-spacing": "^1.0.0",
     "coffeelint-braces-padding": "^0.1.5",
     "coffeelint-limit-newlines": "0.0.2",
-    "coffeelint-no-code-after-return": "0.0.3",
+    "coffeelint-no-code-after-return": "0.0.4",
     "coffeelint-prefer-double-quotes": "^0.1.0",
     "coffeescope2": "latest",
     "coveralls": "^2.11.6",
