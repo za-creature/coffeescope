@@ -217,3 +217,22 @@ describe "ScopeLinter/undefined", ->
             environments: ["node"]
             undefined: true
         }).should.have.length(0)
+
+
+    it "matches comprehensions", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            (y for x in [1,2,3])
+            """
+        ), {
+            undefined: true
+        }).should.have.length(1)
+
+        # see #16
+        ScopeLinter.default().lint(nodes(
+            """
+            (x for x in [1..x])
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)

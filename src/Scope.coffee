@@ -95,10 +95,9 @@ module.exports = class Scope
                 )
 
                 for {locationData} in nodes
-                    if isBefore(locationData, defined) is comprehension
-                        # comprehension vars need to be used strictly before
-                        # they are defined, whereas regular vars need to be
-                        # used afterwards
+                    if comprehension or not isBefore(locationData, defined)
+                        # comprehensions can't be reliably checked so we ignore
+                        # them to avoid false positives (#16)
                         continue
 
                     errors.push({
