@@ -172,11 +172,14 @@ module.exports = class ScopeLinter
         undefined
 
     visitObj: (node) =>
-        # object property names may be literals but are always interpreted as
-        # string expressions (can't be assigned to)
+        # object property names may be literals but are interpreted as string
+        # expressions unless when part of a destructured statement
         for prop in node.properties
             if prop.constructor.name is "Assign"
-                @visit(prop.value)
+                if @reading
+                    @visit(prop.value)
+                else
+                    @visitAssignment(prop.variable, {source: prop.value})
             else
                 @visit(prop)
         undefined
@@ -205,7 +208,7 @@ module.exports = class ScopeLinter
 
     visitValue: (node) =>
         if node.base.constructor.name is "Literal"
-            # simple object ...
+            # simple (single-valued) object ...
 
             if node.base.isAssignable()
                 # ... that is an identifier ...
@@ -227,10 +230,11 @@ module.exports = class ScopeLinter
                         if prop.constructor.name is "Index"
                             @visit(prop)
         else if node.base.constructor.name is "Call"
+            # handles complex assignments like foo(bar).baz = qux
             @newState true, null, =>
                 node.eachChild(@visit)
         else
-            # complex object (Arr or Obj)
+            # complex object potentially containing more values (Arr or Obj)
             node.eachChild(@visit)
         undefined
 

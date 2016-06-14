@@ -174,3 +174,15 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(1)
+
+
+    it "matches destructured defaults", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            defaultVal = 0
+            { property = defaultVal } = {}
+            property
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)

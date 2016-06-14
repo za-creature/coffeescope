@@ -103,6 +103,16 @@ describe "ScopeLinter/undefined", ->
         }).should.have.length(0)
 
 
+    it "matches destructured object defaults", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            {foo = bar} = {}
+            """
+        ), {
+            undefined: true
+        }).should.have.length(1)
+
+
     it "ignores regular expressions", ->
         ScopeLinter.default().lint(nodes(
             """
