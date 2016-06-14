@@ -8,7 +8,7 @@ module.exports = class Scope
         for own key, value of options
             @options[key] = value
 
-    local: (name, type = "Variable") =>
+    local: (name, type = null) =>
         if not @symbols[name]
             @symbols[name] = {
                 reads: []
@@ -23,13 +23,11 @@ module.exports = class Scope
         @local(name).reads.push(node)
         undefined
 
-    identifierWritten: (name, node, argument = false, comprehension = false) =>
+    identifierWritten: (name, node, type) =>
         ref = @local(name)
         ref.writes.push(node)
-        if argument
-            ref.type = "Argument"
-        if comprehension
-            ref.comprehension = true
+        if not ref.type?
+            ref.type = type
         undefined
 
     getScopeOf: (name) =>
@@ -84,7 +82,7 @@ module.exports = class Scope
                 continue
 
             defined = writes[0].locationData
-            comprehension = @symbols[name].comprehension?
+            comprehension = @symbols[name].type is "Comprehension variable"
 
             checkUsedBeforeDefined = (nodes) ->
                 # issue a used-before-undefined variable error for ever

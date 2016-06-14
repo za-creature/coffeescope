@@ -107,8 +107,13 @@ module.exports = class ScopeLinter
             # assignment, find a variable matching that name in the nearest
             # scope and overwrite it, or create a new variable in the current
             # scope if no matches are found
+            type = "Variable"
+            if shadow
+                type = "Argument"
+            else if comprehension
+                type = "Comprehension variable"
             for [name, node] in @definitions
-                @scope.identifierWritten(name, node, shadow, comprehension)
+                @scope.identifierWritten(name, node, type)
         undefined
 
     visitAssign: (node) =>
@@ -129,7 +134,7 @@ module.exports = class ScopeLinter
         # a named class produces a variable in the local scope and in this
         # regard acts like an assignment statement
         if node.variable? and node.variable.base.isAssignable()
-            @scope.identifierWritten(node.variable.base.value, node)
+            @scope.identifierWritten(node.variable.base.value, node, "Variable")
             if @definitions?
                 # allow named classes that are part of assignment statements
                 # without requiring their names to be read
@@ -143,8 +148,7 @@ module.exports = class ScopeLinter
 
     visitCode: (node, noShadow = false) =>
         @subscopes.push =>
-            @scope.identifierWritten("arguments", node)
-            @scope.symbols["arguments"].type = "Builtin"
+            @scope.identifierWritten("arguments", node, "Builtin")
             if noShadow
                 @scope.options["shadow"] = false
 
