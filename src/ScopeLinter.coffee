@@ -176,7 +176,10 @@ module.exports = class ScopeLinter
         # expressions unless when part of a destructured statement
         for prop in node.properties
             if prop.constructor.name is "Assign"
-                if @reading
+                if \
+                        @reading or \
+                        prop.value.base.constructor.name isnt "Literal" or \
+                        prop.context is "object"
                     @visit(prop.value)
                 else
                     @visitAssignment(prop.variable, {source: prop.value})

@@ -186,3 +186,14 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(0)
+
+
+    it "matches nested destructured expressions", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            { property: nested: val } = { property: nested: 1 }
+            val
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
