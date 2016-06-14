@@ -37,7 +37,7 @@ describe "ScopeLinter/unused", ->
             class Foo
             """
         ), {
-            unused_variables: true
+            unused_classes: true
         }).should.have.length(1)
 
         ScopeLinter.default().lint(nodes(
@@ -47,8 +47,32 @@ describe "ScopeLinter/unused", ->
             class Bar extends Foo
             """
         ), {
-            unused_variables: true
+            unused_classes: true
         }).should.have.length(1)
+
+
+    it "ignores assigned classes", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            Bar = class Foo
+
+            Bar
+            """
+        ), {
+            unused_classes: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            class Foo
+
+            Baz = class Bar extends Foo
+
+            Baz
+            """
+        ), {
+            unused_classes: true
+        }).should.have.length(0)
 
 
     it "matches recursive assignments", ->

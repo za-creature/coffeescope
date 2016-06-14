@@ -169,13 +169,19 @@ module.exports = class Coffeescope2
 
                 <dt><code>unused_arguments</code></dt>
                 <dd>A boolean value that specifies whether to raise a warning /
-                    error whenever a function argument is never read. The
-                    special value "after_used" will only issue for arguments
-                    that are defined after the last read argument. Note that
+                    error whenever a function argument is never read. Note that
                     arguments behave like variables for all intents and
                     purposes other than scoping and will respect any and all
                     <code>overwrite</code> and <code>shadow</code> rules and
                     exceptions.</dd>
+
+                <dt><code>unused_classes</code></dt>
+                <dd>A boolean value that specifies whether to raise a warning /
+                    error whenever a class is defined but never used. Classes
+                    that are part of an assignment statement never trigger
+                    this warning. Defaults to <samp>true</samp> because of
+                    historical reasons and the low rate of false positives
+                    generated on most codebases.</dd>
             </dl>
         """
         level: "warn"
@@ -198,6 +204,7 @@ module.exports = class Coffeescope2
 
         unused_variables: true  # warn when a variable is not accessed
         unused_arguments: false  # warn when an argument is not accessed
+        unused_classes: true  # warn when a class is not instantiated or copied
 
     lintAST: (root, {config, createError}) ->
         for spec in ScopeLinter.default().lint(root, config[@rule.name])

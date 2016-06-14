@@ -134,7 +134,7 @@ module.exports = class ScopeLinter
         # a named class produces a variable in the local scope and in this
         # regard acts like an assignment statement
         if node.variable? and node.variable.base.isAssignable()
-            @scope.identifierWritten(node.variable.base.value, node, "Variable")
+            @scope.identifierWritten(node.variable.base.value, node, "Class")
             if @definitions?
                 # allow named classes that are part of assignment statements
                 # without requiring their names to be read

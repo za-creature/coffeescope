@@ -136,7 +136,12 @@ module.exports = class Scope
                          line #{writes[0].locationData.first_line + 1})"
                 })
 
-            if @options["unused_#{type.toLowerCase()}s"] then do ->
+            if \
+                    (type in ["Comprehension variable", "Variable"] and \
+                    @options["unused_variables"]) or \
+                    type is "Class" and @options["unused_classes"] or \
+                    type is "Argument" and @options["unused_arguments"]
+            then do ->
                 if reads.length or innerReads.length
                     return  # variable was used at least once
 
