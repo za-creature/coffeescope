@@ -45,7 +45,8 @@ custom rules at the bottom):
     "hoist_local": true,
     "hoist_parent": true,
     "unused_variables": true,
-    "unused_arguments": false
+    "unused_arguments": false,
+    "unused_classes": true
 },
 ```
 

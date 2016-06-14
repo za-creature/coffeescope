@@ -159,8 +159,8 @@ module.exports = class Coffeescope2
 
                 <dt><code>hoist_parent</code></dt>
                 <dd>Similar to <code>hoist_local</code>, but it allows
-                referencing a variable before it was defined provided it
-                belongs (is written to) in a parent scope. The default value is
+                referencing a variable before it was defined, provided it
+                belongs to (is written in) a parent scope. The default value is
                 <samp>true</samp>.</dd>
 
                 <dt><code>unused_variables</code></dt>
