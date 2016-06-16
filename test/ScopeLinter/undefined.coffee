@@ -236,3 +236,21 @@ describe "ScopeLinter/undefined", ->
         ), {
             undefined: true
         }).should.have.length(0)
+
+
+    it "matches destructured arguments", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            ({property}) -> property
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            ({property = false}) -> property
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
