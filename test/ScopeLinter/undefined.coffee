@@ -254,3 +254,27 @@ describe "ScopeLinter/undefined", ->
         ), {
             undefined: true
         }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            ({property = {}}) -> property
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            ({property: foo}) -> foo
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            ({property = foo}) -> property
+            """
+        ), {
+            undefined: true
+        }).should.have.length(1)

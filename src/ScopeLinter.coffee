@@ -182,7 +182,6 @@ module.exports = class ScopeLinter
             if prop.constructor.name is "Assign"
                 if \
                         @reading or \
-                        prop.value.base.constructor.name in ["Arr", "Obj"] or \
                         prop.context is "object"
                     @visit(prop.value)
                 else
