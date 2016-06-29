@@ -233,3 +233,15 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(0)
+
+
+    it "matches ranges", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            MAX_LENGTH = 3
+            str = 'foobar'
+            console.log str[...MAX_LENGTH]
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)

@@ -233,7 +233,7 @@ module.exports = class ScopeLinter
                 # ... that may have been accesed as an array
                 @newState true, null, =>
                     for prop in node.properties
-                        if prop.constructor.name is "Index"
+                        if prop.constructor.name isnt "Access"
                             @visit(prop)
         else if node.base.constructor.name is "Call"
             # handles complex assignments like foo(bar).baz = qux
