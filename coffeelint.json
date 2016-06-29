@@ -121,7 +121,7 @@
         "environments": ["builtin","es5","browser","es6","node","mocha","shelljs","jquery"],
         "globals": {},
         "overwrite": false,
-        "shadow": false,
+        "shadow": true,
         "shadow_builtins": false,
         "shadow_exceptions": ["err", "next"],
         "undefined": true,
