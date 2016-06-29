@@ -221,3 +221,15 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(0)
+
+
+    it "matches do statements", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            for v, k in {foo: "bar"}
+                do (v, k) ->
+                    console.log(v, k)
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)

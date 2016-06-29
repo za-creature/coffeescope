@@ -125,7 +125,7 @@ module.exports = class ScopeLinter
             # part of a `do` statement; don't want to shadow in this context
             @visitCode(node.variable, true)
             for arg in node.args or []
-                @visit(arg)
+                @scope.identifierRead(arg.name.value, arg)
         else
             node.eachChild(@visit)
         undefined
