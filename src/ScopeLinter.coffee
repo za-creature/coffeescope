@@ -122,8 +122,13 @@ module.exports = class ScopeLinter
 
     visitCall: (node) =>
         if node.do
-            # part of a `do` statement; don't want to shadow in this context
-            @visitCode(node.variable, true)
+            if node.variable.constructor.name is "Code"
+                # call that is part of a `do` statement
+                # don't want to shadow in this context
+                @visitCode(node.variable, true)
+            else
+                @visit(node.variable)
+
             for arg in node.args or []
                 @scope.identifierRead(arg.name.value, arg)
         else

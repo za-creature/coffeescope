@@ -245,3 +245,16 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(0)
+
+
+    it "matches explicit do statements", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            afn = (fn) -> fn()
+
+            do afn ->
+              null
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
