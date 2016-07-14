@@ -32,7 +32,7 @@ module.exports = class Scope
 
     getScopeOf: (name) =>
         # only safe to call after this node has been committed
-        if @symbols[name]? and @symbols[name].writes isnt 0
+        if @symbols[name]? and @symbols[name].writes.length isnt 0
             this
         else
             @parent.getScopeOf(name)
