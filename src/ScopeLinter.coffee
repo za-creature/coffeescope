@@ -142,12 +142,20 @@ module.exports = class ScopeLinter
     visitClass: (node) =>
         # a named class produces a variable in the local scope and in this
         # regard acts like an assignment statement
-        if node.variable? and node.variable.base.isAssignable()
-            @scope.identifierWritten(node.variable.base.value, node, "Class")
-            if @definitions?
-                # allow named classes that are part of assignment statements
-                # without requiring their names to be read
-                @scope.identifierRead(node.variable.base.value, node.variable)
+        if node.variable? and node.variable.isAssignable()
+            if node.variable.isComplex()
+                # composite class definition; treat as a read for base value
+                @visit(node.variable)
+            else
+                # regular named class definition
+                @scope.identifierWritten(node.variable.base.value,
+                                         node,
+                                         "Class")
+                if @definitions?
+                    # allow named classes that are part of assignment
+                    # statements without requiring their names to be read
+                    @scope.identifierRead(node.variable.base.value,
+                                          node.variable)
 
         if node.parent?
             @visit(node.parent)

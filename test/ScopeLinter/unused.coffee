@@ -51,6 +51,21 @@ describe "ScopeLinter/unused", ->
         }).should.have.length(1)
 
 
+    it "supports classes as properties", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            PROP = "Bar"
+            obj = {}
+
+            class obj.Foo
+            class obj[PROP]
+            """
+        ), {
+            unused_classes: true,
+            unused_variables: true
+        }).should.have.length(0)
+
+
     it "ignores assigned classes", ->
         ScopeLinter.default().lint(nodes(
             """
