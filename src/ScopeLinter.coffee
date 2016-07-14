@@ -130,7 +130,11 @@ module.exports = class ScopeLinter
                 @visit(node.variable)
 
             for arg in node.args or []
-                @scope.identifierRead(arg.name.value, arg)
+                if arg.name?
+                    @scope.identifierRead(arg.name.value, arg)
+                else
+                    @visit(arg)
+
         else
             node.eachChild(@visit)
         undefined

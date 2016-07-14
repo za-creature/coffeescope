@@ -278,3 +278,17 @@ describe "ScopeLinter/undefined", ->
         ), {
             undefined: true
         }).should.have.length(1)
+
+
+    it "matches `do` function defaults", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            myVar2 = 2
+
+            do (myVar = myVar2) ->
+              myVar
+            """
+        ), {
+            undefined: true,
+            unused: true
+        }).should.have.length(0)
