@@ -36,7 +36,7 @@
     "lib"
   ],
   "dependencies": {
-    "globals": "^9.8.0"
+    "globals": "^9.9.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
@@ -49,11 +49,11 @@
     "coffeelint-no-code-after-return": "0.0.4",
     "coffeelint-prefer-double-quotes": "^0.1.0",
     "coffeescope2": "latest",
-    "coveralls": "^2.11.9",
+    "coveralls": "^2.11.12",
     "istanbul": "^0.4.3",
-    "mocha": "^2.5.3",
+    "mocha": "^3.0.0",
     "mocha-junit-reporter": "^1.11.1",
-    "proxyquire": "^1.7.9"
+    "proxyquire": "^1.7.10"
   },
   "engines": {
     "npm": "*",
