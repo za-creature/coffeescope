@@ -9,7 +9,7 @@ module.exports = class Coffeescope2
             <p>This rule checks the usage of your variables and prevents common
             mistakes or enforces style conventions</p>
 
-            <p>It can check for and report:</p>
+            <p>It can look for and report:</p>
 
             <ul>
                 <li>Undefined variables</li>
@@ -18,8 +18,8 @@ module.exports = class Coffeescope2
                 <li>Arguments that shadow variables from an outer scope (due to
                     the scoping rules in coffeescript, these can <em>only</em>
                     be arguments)</li>
-                <li>Arguments that overwrite variables from an outer scope (due
-                    to the scoping rules in coffeescript, these can
+                <li>Variables that overwrite other variables from an outer
+                    scope (due to the scoping rules in coffeescript, these can
                     <em>never</em> be arguments)</li>
             </ul>
 
@@ -150,18 +150,19 @@ module.exports = class Coffeescope2
 
                 <dt><code>hoist_local</code></dt>
                 <dd>A boolean value that specifies whether to warn about
-                relying on variable hosting to the top of their scope. The
-                default value is <samp>true</samp> because of coffeescript's
-                semantics. Changing it to false will start producing warnings
-                whenever you attempt to access a local variable before you
-                first assigned to it. We recommend switching this to
-                <samp>false</samp> as it results in easier to read code.</dd>
+                    relying on variable hosting to the top of their scope. The
+                    default value is <samp>true</samp> because of
+                    coffeescript's semantics. Changing it to false will start
+                    producing warnings whenever you attempt to access a local
+                    variable before you first assigned to it. We recommend
+                    switching this to <samp>false</samp> as it results in
+                    easier to read code.</dd>
 
                 <dt><code>hoist_parent</code></dt>
                 <dd>Similar to <code>hoist_local</code>, but it allows
-                referencing a variable before it was defined, provided it
-                belongs to (is written in) a parent scope. The default value is
-                <samp>true</samp>.</dd>
+                    referencing a variable before it was defined, provided it
+                    belongs to (is written in) a parent scope. The default
+                    value is <samp>true</samp>.</dd>
 
                 <dt><code>unused_variables</code></dt>
                 <dd>A boolean value that specifies whether to show a message if
