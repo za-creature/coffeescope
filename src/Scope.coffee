@@ -143,19 +143,19 @@ module.exports = class Scope
                     type is "Argument" and @options["unused_arguments"]
             then do ->
                 if reads.length or innerReads.length
-                    return  # variable was used at least once
+                    return  # variable was read at least once
 
                 for {locationData}, index in writes.concat(innerWrites)
-                    # issue a variable-is-assigned-but-never-used warning every
+                    # issue a variable-is-assigned-but-never-read warning every
                     # time it is accessed (here and in all child scopes)
                     errors.push({
                         # context: location
                         lineNumber: locationData.first_line + 1
                         message: if index
-                            "#{type} \"#{name}\" is never used (first
-                             defined on line #{defined.first_line + 1})"
+                            "#{type} \"#{name}\" is assigned to but never read
+                             (first defined on line #{defined.first_line + 1})"
                         else
-                            "#{type} \"#{name}\" is never used"
+                            "#{type} \"#{name}\" is assigned to but never read"
                     })
 
             if @options["overwrite"] then do =>
