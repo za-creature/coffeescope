@@ -90,7 +90,7 @@ module.exports = class ScopeLinter
         # * visitTry
         @newState false, [], =>
             # create empty definition list and visit the target to populate
-            if destination.constructor.name is "Literal"
+            if destination.constructor.name in ["Literal", "IdentifierLiteral"]
                 # work around coffeescript not producing Value nodes for all
                 # types of assignments (simple ones that are part of bigger
                 # statements are just stored as Literal nodes)
@@ -230,7 +230,7 @@ module.exports = class ScopeLinter
         undefined
 
     visitValue: (node) =>
-        if node.base.constructor.name is "Literal"
+        if node.base.constructor.name in ["Literal", "IdentifierLiteral"]
             # simple (single-valued) object ...
 
             if node.base.isAssignable()
