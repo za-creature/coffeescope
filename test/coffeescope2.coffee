@@ -4,21 +4,24 @@ proxyquire = require "proxyquire"
 
 
 describe "coffeescope2", ->
-    it "should be a coffeelint AST module", ->
+    it "is a coffeelint AST module", ->
         Coffeescope2 = require "../src"
         Coffeescope2.should.be.an.instanceof(Function)
         Coffeescope2::should.have.deep.property("rule.name", "check_scope")
         Coffeescope2::should.have.deep.property("rule.description")
-        Coffeescope2::should.have.deep.property("rule.message")
         Coffeescope2::should.have.property("lintAST")
 
 
-    it "should default to warn", ->
+    it "has sensible defaults", ->
         Coffeescope2 = require "../src"
-        Coffeescope2::should.have.deep.property("rule.level", "warn")
+        Coffeescope2::should.have.deep.property("rule.level", "ignore")
+        Coffeescope2::should.have.deep.property("rule.environments")
+        Coffeescope2::should.have.deep.property("rule.globals")
+        Coffeescope2::should.have.deep.property("rule.undefined", "error")
+        Coffeescope2::should.have.deep.property("rule.unused", "warn")
 
 
-    it "should forward the root and only the relevant config", ->
+    it "forwards the AST root and relevant config", ->
         calledWith = null
         Coffeescope2 = proxyquire "../src",
             "./ScopeLinter":

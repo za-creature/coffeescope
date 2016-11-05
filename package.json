@@ -29,7 +29,7 @@
     "prepublish": "coffee -o lib -c src",
     "lint": "coffeelint src/ && coffeelint test/",
     "test": "mocha test/",
-    "test-all": "mocha --reporter mocha-junit-reporter test/",
+    "test-all": "mocha --require coverage.coffee --reporter mocha-junit-reporter test/",
     "coverage": "istanbul report lcov"
   },
   "files": [
@@ -41,6 +41,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "coffee-coverage": "^1.0.1",
+    "coffee-errors": "^0.8.6",
     "coffee-script": "^1.10.0",
     "coffeelint": "latest",
     "coffeelint-advanced-colon-assignment-spacing": "^1.0.0",
@@ -53,7 +54,8 @@
     "istanbul": "^0.4.3",
     "mocha": "^3.0.0",
     "mocha-junit-reporter": "^1.11.1",
-    "proxyquire": "^1.7.10"
+    "proxyquire": "^1.7.10",
+    "source-map-support": "^0.4.5"
   },
   "engines": {
     "npm": "*",

@@ -1,85 +1,143 @@
 "use strict"
+Variable = require "./variable"
 
 
 module.exports = class Scope
-    constructor: (@parent, options = {}) ->
-        @symbols = Object.create(null)
-        @options = {}
-        for own key, value of options
-            @options[key] = value
+    children: []
+    constructor: (@parent = null) ->
+        if @parent?
+            @parent.children.push(this)
 
-    local: (name, type = null) =>
-        if not @symbols[name]
-            @symbols[name] = {
-                reads: []
-                writes: []
-                innerReads: []  # reads from inner scope
-                innerWrites: []  # writes from inner scope
-                type
-            }
-        @symbols[name]
-
-    identifierRead: (name, node) =>
-        @local(name).reads.push(node)
+    reads: Object.create(null)
+    read: (name, node) =>
+        if not @reads[name]?
+            @reads[name] = []
+        @reads[name].push(node)
         undefined
 
-    identifierWritten: (name, node, type) =>
-        ref = @local(name)
-        ref.writes.push(node)
-        if not ref.type?
-            ref.type = type
+    writes: Object.create(null)
+    write: (name, node, declaration) =>
+        if not @writes[name]?
+            @writes[name] = []
+        @writes[name].push([node, declaration])
         undefined
 
-    getScopeOf: (name) =>
-        # only safe to call after this node has been committed
-        if @symbols[name]? and @symbols[name].writes.length isnt 0
-            this
-        else
-            @parent.getScopeOf(name)
+    symbols: Object.create(null)  # stores the symbol table for locals
+    variable: (name) => @symbols[name] or @parent?.variable(name)
 
-    commit: =>
-        for name, {reads, writes, type} of @symbols
-            if type is "Argument"
-                # variable is explicitly marked as local; keep it here
-                continue
+    errors: (options) =>
+        results = []
+        error = ({name, message, type, location}) ->
+            for pattern in options["#{type}_except"] or []
+                if name.match(new RegExp("^#{pattern}$"))
+                    return
+            results.push({
+                symbol: name
+                message
+                code: type.toUpperCase()
+                level: options[type]
+                location
+                lineNumber: local[0].locationData.first_line + 1
+            })
 
-            scope = @parent.getScopeOf(name)
-            if not scope?
-                # no matching variable found in parent scope(s)
-                continue
+        # figure out what writes create new symbols in the current scope and
+        # what writes overwrite values from parent scopes
+        for name, writes of @writes
+            local = null
+            console.log(writes)
 
-            {type, innerReads, innerWrites} = scope.symbols[name]
-            if type is "Builtin" and writes.length
+            for args in writes
+                [node, declaration] = args
+                if declaration.type in ["Argument", "Do"]
+                    # this variable was declared at least once as an argument;
+                    # define a local at the first argument declaration
+                    if local?
+                        throw new Error("Must never happen")
+                    local = args
+
+            ref = @variable(name)
+            if not ref? or ref.type is "Builtin"
                 # coffeescript treats builtins as undefined variables because
                 # it doesn't know about `globals` and `environments`; reading
                 # one is fine, but writing to one will create a local variable
-                continue
+                local = writes[0]
 
-            # if all the above rules fail, then this variable doesn't belong in
-            # the current scope so we merge its usage into its parent
-            Array::push.apply(innerReads, reads)
-            Array::push.apply(innerWrites, writes)
-            delete @symbols[name]
-        undefined
+            if local?
+                # if this variable doesn't yet exist or must be local, add a
+                # new entry to this scope's symbol table and ensure the next
+                # operation happens on the local copy (in the event it's
+                # shadowing a parent value)
+                ref = @symbols[name] = new Variable(name, this, local...)
 
-    appendErrors: (errors) =>
-        for name, {reads, writes, type, innerReads, innerWrites} of @symbols
-            if not writes.length
-                if @options["undefined"] then do ->
-                    # issue an undefined variable error for every attempt to
-                    # read it in the current scope; since this variable was
-                    # never written in this scope, @getScopeOf will skip it so
-                    # there's no need to look in inner scopes as they will have
-                    # their own copy local copy
-                    for {locationData} in reads
-                        errors.push({
-                            lineNumber: locationData.first_line + 1
-                            message: "Undefined identifier \"#{name}\""
+            # remember all attempts to write to this variable in this scope
+            for node in writes
+                ref.writes.push([this, node])
+
+        # find attempts to read unidentified symbols and record the in-scope
+        # reads of all existing symbols; hoisting is handled separately
+        for name, reads of @reads
+            ref = @variable(name)
+            if ref?
+                for node in reads
+                    ref.reads.push([this, node])
+            else
+                # issue an undefined identifier error for every attempt to read
+                # it in the current scope; since an entry is not stored in the
+                # symbol table, subscopes that don't declare a local symbol of
+                # the same name will see it as undefined as well
+                for node in reads
+                    error({
+                        name,
+                        message: "Undefined identifier \"#{name}\""
+                        type: "undefined",
+                        location: node.locationData
+                    })
+
+        for scope in @children
+            for error in scope.errors(options)
+                results.push(error)
+
+        for name, ref of @symbols
+            parent = @parent?.variable(name)
+            if parent? and parent isnt ref
+                # this variable is shadowing another (possibly builtin)
+                # variable from a parent scope
+                if parent.type is "Builtin"
+                    if options["shadow_builtins"] is false or (
+                        options["shadow_builtins"] is "arguments" and \
+                        ref.declaration.type not in ["Do", "Argument"]
+                    )
+                        error({
+                            name,
+                            message: "Shadowing built-in identifier
+                                      \"#{name}\""
+                            type: "shadow",
+                            location: ref.location
                         })
+                else if ref.declaration.type is "Argument"
+                    error({
+                        name,
+                        message: "Shadowing identifier \"#{name}\" (first
+                                  defined on line
+                                  #{parent.location.first_line + 1}"
+                        type: "shadow",
+                        location: ref.location
+                    })
 
-                # this is an undefined variable so all the other rules are
-                # irelevant
-                continue
+            if not ref.reads.length
+                # this variable was never read in this scope or any of the
+                # subscopes it was visible in; as such, it may be removed
+                for write, index in ref.writes
+                    error({
+                        name,
+                        message: "Identifier \"#{name}\" is assigned to but
+                                  never read" + if index then "(first defined
+                                  on line #{ref.location.first_line + 1})"
+                        type: "unused"
+                        location: ref.location
+                    })
+
+        ###
 
             defined = writes[0].locationData
             comprehension = @symbols[name].type is "Comprehension variable"
@@ -100,18 +158,17 @@ module.exports = class Scope
 
                     errors.push({
                         lineNumber: locationData.first_line + 1
-                        message: "#{type} \"#{name}\" used before
-                                  it was first defined (on line
-                                  #{defined.first_line + 1}, column
-                                  #{defined.first_column + 1})"})
+                        message: "#{type} \"#{name}\" used before it was first
+                                  defined (on line #{defined.first_line + 1},
+                                  column #{defined.first_column + 1})"})
 
-            if not @options["hoist_local"]
+            if not options["hoist_local"]
                 checkUsedBeforeDefined(reads)
 
-            if not @options["hoist_parent"]
+            if not options["hoist_parent"]
                 checkUsedBeforeDefined(innerReads)
 
-            if @options["shadow"] then do (type, writes) =>
+            if options["shadow"] then do (type, writes) =>
                 if type is "Builtin"
                     return  # local builtins always shadow by design
 
@@ -120,10 +177,10 @@ module.exports = class Scope
                     return  # variable is not shadowing anything
 
                 {type, writes} = parent.symbols[name]
-                if type is "Builtin" and not @options["shadow_builtins"]
+                if type is "Builtin" and not options["shadow_builtins"]
                     return  # user doesn't want to be notified about this
 
-                for exception in @options["shadow_exceptions"] or []
+                for exception in options["shadow_exceptions"] or []
                     if (new RegExp("^#{exception}$")).test(name)
                         return  # variable is allowed to shadow
 
@@ -132,15 +189,18 @@ module.exports = class Scope
                     message: if type is "Builtin"
                         "Shadowing built-in identifier \"#{name}\""
                     else
-                        "Shadowing #{type} \"#{name}\" (first defined on
-                         line #{writes[0].locationData.first_line + 1})"
+                        "Shadowing #{type.toLowerCase()} \"#{name}\" (first
+                         defined on line
+                         #{writes[0].locationData.first_line + 1})"
                 })
 
             if \
-                    (type in ["Comprehension variable", "Variable"] and \
-                    @options["unused_variables"]) or \
-                    type is "Class" and @options["unused_classes"] or \
-                    type is "Argument" and @options["unused_arguments"]
+                    (type in ["Comprehension variable",
+                              "Variable",
+                              "Exception"] and \
+                    options["unused_variables"]) or \
+                    type is "Class" and options["unused_classes"] or \
+                    type is "Argument" and options["unused_arguments"]
             then do ->
                 if reads.length or innerReads.length
                     return  # variable was read at least once
@@ -158,18 +218,18 @@ module.exports = class Scope
                             "#{type} \"#{name}\" is assigned to but never read"
                     })
 
-            if @options["overwrite"] then do =>
+            if options["overwrite"] then do =>
                 checkOverwrite = (nodes) ->
                     for {locationData} in nodes
                         errors.push({
                             # context: node.locationData
                             lineNumber: locationData.first_line + 1
-                            message: "Overwriting #{type} \"#{name}\" (first
-                                      defined on line #{defined.first_line +
-                                      1})"
+                            message: "Overwriting #{type.toLowerCase()}
+                                      \"#{name}\" (first defined on line
+                                      #{defined.first_line + 1})"
                         })
 
-                if @options["same_scope"]
+                if options["same_scope"]
                     checkOverwrite(writes.slice(1))
-                checkOverwrite(innerWrites)
-        undefined
+                checkOverwrite(innerWrites)###
+        return results

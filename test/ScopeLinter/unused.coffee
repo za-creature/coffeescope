@@ -4,8 +4,8 @@
 ScopeLinter = require "../../src/ScopeLinter"
 
 
-describe "ScopeLinter/unused", ->
-    it "matches trivial cases", ->
+describe.only "ScopeLinter/unused", ->
+    it.only "matches trivial cases", ->
         ScopeLinter.default().lint(nodes(
             """
             foo = "bar"

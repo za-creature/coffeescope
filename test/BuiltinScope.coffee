@@ -1,5 +1,5 @@
 "use strict"
-{expect} = require "chai"
+###{expect} = require "chai"
 
 BuiltinScope = require "../src/BuiltinScope"
 
@@ -48,3 +48,4 @@ describe "BuiltinScope", ->
         expect(spawn()).to.have.property("this")
         expect(spawn("es3")).to.have.property("this")
         expect(spawn(["es5", "es6"])).to.have.property("this")
+###
