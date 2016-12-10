@@ -30,7 +30,7 @@ conventions. It can find and report:
   * [`undefined`](#undefined)
   * [`undefined_hoist`](#undefined-hoist)
   * [`unused`](#unused)
-  * [`unused_variables`](#unused-arguments)
+  * [`unused_variables`](#unused-variables)
   * [`unused_arguments`](#unused-arguments)
   * [`unused_except`](#unused-except)
   * [`shadow`](#shadow)

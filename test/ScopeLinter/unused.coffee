@@ -1,22 +1,25 @@
 "use strict"
-{nodes} = require "coffee-script"
-
-ScopeLinter = require "../../src/ScopeLinter"
+lint = require "../helper"
 
 
-describe.only "ScopeLinter/unused", ->
-    it.only "matches trivial cases", ->
-        ScopeLinter.default().lint(nodes(
-            """
+describe "ScopeLinter/unused", ->
+    defaults = {
+        unused: "error"
+        unused_variables: false
+        unused_arguments: false
+    }
+
+
+    it "matches trivial cases", ->
+        lint("""
             foo = "bar"
             {bar} = "bar"
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(2)
+        """, defaults)
+        .total(2)
+        .unused("foo")
+        .unused("bar")
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             (foo) ->
                 undefined
 
@@ -25,97 +28,75 @@ describe.only "ScopeLinter/unused", ->
 
             ({foo} = {foo: bar}) ->
                 undefined
-            """
-        ), {
-            unused_arguments: true
-        }).should.have.length(3)
+        """, defaults)
+        .total(3)
+        .unused("foo", count: 3)
 
 
     it "matches classes", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             class Foo
-            """
-        ), {
-            unused_classes: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .unused("Foo")
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             class Foo
 
             class Bar extends Foo
-            """
-        ), {
-            unused_classes: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .unused("Bar")
 
 
     it "supports classes as properties", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             PROP = "Bar"
             obj = {}
 
             class obj.Foo
             class obj[PROP]
-            """
-        ), {
-            unused_classes: true,
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "ignores assigned classes", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             Bar = class Foo
 
             Bar
-            """
-        ), {
-            unused_classes: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             class Foo
 
             Baz = class Bar extends Foo
 
             Baz
-            """
-        ), {
-            unused_classes: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches recursive assignments", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             intervalId = setInterval ->
               clearInterval intervalId
             , 50
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "doesn't match named classes that are part of an assignment", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             Bar = class Foo
             Bar
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches for loops", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             for i in [1,2,3,4]
                 undefined
 
@@ -130,146 +111,128 @@ describe.only "ScopeLinter/unused", ->
 
             for i, index of {foo: "bar"}
                 undefined
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(7)
+        """, defaults)
+        .total(7)
+        .unused("i", count: 5)
+        .unused("index", count: 2)
+
+
+    it "matches exceptions", ->
+        lint("""
+            try
+                undefined
+            catch err
+                undefined
+        """, defaults)
+        .total(1)
+        .unused("err")
+
+        lint("""
+            try
+                undefined
+            catch err
+                console.log(err)
+        """, defaults)
+        .total(0)
 
 
     it "issues multiple errors for the same value", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             {foo} = "bar"
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(2)
+        """, defaults)
+        .total(2)
+        .unused("foo", count: 2)
 
 
     it "ignores object literals", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             {bar: "baz"}
-            """
-        ), {
-            unused_arguments: true
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches indirect access", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = {}
             foo[bar]
             foo.bar
             foo[0]
             foo.bar()
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "ignores builtins", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = ->
                 undefined
             foo()
-            """
-        ), {
-            unused_arguments: true
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "ignores arguments when instructed", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             (foo) ->
                 undefined
-            """
-        ), {
-            unused_arguments: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .unused("foo")
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             (foo) ->
                 undefined
-            """
-        ), {
-            unused_arguments: false
-        }).should.have.length(0)
+        """, defaults, unused_arguments: false)
+        .total(0)
 
 
     it "supports special symbol names", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             constructor = 123
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .unused("constructor")
 
 
     it "matches destructured defaults", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             defaultVal = 0
             { property = defaultVal } = {}
             property
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches nested destructured expressions", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             { property: nested: val } = { property: nested: 1 }
             val
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches do statements", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             for v, k in {foo: "bar"}
                 do (v, k) ->
                     console.log(v, k)
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
-
-    it "matches ranges", ->
-        ScopeLinter.default().lint(nodes(
-            """
-            MAX_LENGTH = 3
-            str = 'foobar'
-            console.log str[...MAX_LENGTH]
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
-
-
-    it "matches explicit do statements", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             afn = (fn) -> fn()
 
             do afn ->
               null
-            """
-        ), {
-            unused_variables: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
+
+
+    it "matches ranges", ->
+        lint("""
+            MAX_LENGTH = 3
+            str = 'foobar'
+            console.log str[...MAX_LENGTH]
+        """, defaults)
+        .total(0)

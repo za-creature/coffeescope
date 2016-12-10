@@ -1,166 +1,133 @@
 "use strict"
-{nodes} = require "coffee-script"
-
-ScopeLinter = require "../../src/ScopeLinter"
+lint = require "../helper"
 
 
 describe "ScopeLinter/undefined", ->
+    defaults = {
+        undefined: "error"
+        undefined_hoist: false
+    }
+
+
     it "matches trivial cases", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo
             foo.bar
             foo[0]
             foo["bar"]
-            """
-        ), {
-            undefined: true
-        }).should.have.length(4)
+        """, defaults)
+        .total(4)
+        .undefined("foo", count: 4)
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = bar
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("bar")
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches unary operators", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             !foo
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("foo")
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo--
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("foo")
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             ++foo
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("foo")
 
 
     it "creates subscope on no-assign", ->
-        ScopeLinter.default().lint(nodes(
-            """
-            foo
+        lint("""
             -> foo = "bar"
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+            foo
+        """, defaults)
+        .total(1)
+        .undefined("foo")
 
 
     it "follows calls", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo(bar).type = "baz"
-            """
-        ), {
-            undefined: true
-            globals: {"foo": true}
-        }).should.have.length(1)
+        """, defaults, globals: "foo")
+        .total(1)
+        .undefined("bar")
 
 
     it "allows recursion", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = ->
                 foo()
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "ignores object literals", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = {bar: "baz"}
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches destructured object defaults", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             {foo = bar} = {}
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("bar")
 
 
     it "ignores regular expressions", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             /foo/
             /foo/i
             /foo/i.exec
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches implicit object literals", ->
-        ScopeLinter.default().lint(nodes(
-            """
-            foo = {bar: "baz", bar}
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        lint("""
+            foo = {bar: "baz", qux}
+        """, defaults)
+        .total(1)
+        .undefined("qux")
 
 
     it "matches indexed access", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = {}
             foo[bar]
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("bar")
 
 
     it "ignores attribute access", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = {}
             foo.bar
             foo["bar"]
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "converts indirect access to read", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             bar = "baz"
             foo.foo = "bar1"
             foo["foo"] = "bar2"
@@ -170,125 +137,86 @@ describe "ScopeLinter/undefined", ->
             foo["foo"]
             foo[bar]
             foo[0]
-            """
-        ), {
-            undefined: true
-        }).should.have.length(8)
+        """, defaults)
+        .total(8)
+        .undefined("foo", count: 8)
 
 
     it "follows indirect access", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             foo[bar]
             foo.bar[baz]
             foo[bar].baz
-            """
-        ), {
-            undefined: true
-        }).should.have.length(3)
+        """, defaults)
+        .total(3)
+        .undefined("bar", count: 2)
+        .undefined("baz")
 
 
     it "respects builtins", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             this
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
 
-
-        ScopeLinter.default().lint(nodes(
-            """
             ->
                 arguments
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             console.log(process)
-            """
-        ), {
-            environments: ["node"]
-            undefined: true
-        }).should.have.length(0)
+        """, defaults, environments: ["node"])
+        .total(0)
 
 
     it "matches comprehensions", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             (y for x in [1,2,3])
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("y")
 
         # see #16
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             (x for x in [1..x])
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches destructured arguments", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             ({property}) -> property
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             ({property = false}) -> property
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             ({property = {}}) -> property
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
-        ScopeLinter.default().lint(nodes(
-            """
-            ({property: foo}) -> foo
-            """
-        ), {
-            undefined: true
-        }).should.have.length(0)
+        lint("""
+            ({property: nested: foo}) -> foo
+        """, defaults)
+        .total(0)
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             ({property = foo}) -> property
-            """
-        ), {
-            undefined: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .undefined("foo")
 
 
     it "matches `do` function defaults", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             myVar2 = 2
 
             do (myVar = myVar2) ->
               myVar
-            """
-        ), {
-            undefined: true,
-            unused: true
-        }).should.have.length(0)
+        """, defaults, unused: "error")
+        .total(0)

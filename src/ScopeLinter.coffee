@@ -8,6 +8,19 @@ Scope = require "./Scope"
 module.exports = class ScopeLinter
     @default: -> defaultLinter  # initialized on the bottom of the file
 
+    constructor: ->
+        # the scope available in the current node; a new scope is pushed every
+        # time a Code node is encountered and popped every time a Code node has
+        # been completely visited.
+        @scope = null
+
+        # a list of functions that should be called in a separate sub-scope as
+        # soon as the current scope is completely visited;
+        @subscopes = null
+
+        # the current declaration, if any
+        @declaration = null
+
     lint: (root, options) =>
         global = new Scope()
         builtins = new Declaration("Builtin", root, {line: 0, column: 0})
@@ -16,7 +29,7 @@ module.exports = class ScopeLinter
         if typeof envs is "string"
             envs = [envs]
         for env in envs or []
-            for own name of env
+            for own name of globals[env] or []
                 global.write(name, root, builtins)
 
         custom = options["globals"]
@@ -32,15 +45,6 @@ module.exports = class ScopeLinter
         errors.sort((a, b) -> a.lineNumber - b.lineNumber)
         return errors
 
-    # the scope available in the current node; a new scope is pushed every
-    # time a Code node is encountered and popped every time a Code node has
-    # been completely visited.
-    scope: null
-
-    # a list of functions that should be called in a separate sub-scope as
-    # soon as the current scope is completely visited;
-    subscopes: null
-
     newScope: (scope, cb) =>
         # invokes `cb` in `scope`
         old = [@scope, @subscopes]
@@ -54,9 +58,6 @@ module.exports = class ScopeLinter
         finally
             [@scope, @subscopes] = old
         undefined
-
-    # the current declaration, if any
-    declaration: null
 
     newDeclaration: (type, node, cb) =>
         old = @declaration
@@ -72,6 +73,7 @@ module.exports = class ScopeLinter
             cb()
         finally
             @declaration = old
+        undefined
 
     visit: (node) =>
         if not node?
@@ -86,9 +88,17 @@ module.exports = class ScopeLinter
 
     visitAssign: (node) =>
         @newDeclaration @declaration?.type or "Variable", node, =>
-            @visit(node.variable)
-        @visit(node.value)
-        undefined
+            if node.variable.base.constructor.name is "PropertyName"
+                # value / variable are flipped in the AST when dealing with
+                # nested destructured properties
+                @visit(node.value)
+            else
+                @visit(node.variable)
+                @newDeclaration =>
+                    if node.value.constructor.name is "Class"
+                        @visitClass(node.value, true)
+                    else
+                        @visit(node.value)
 
     visitCall: (node) =>
         if node.do and node.variable.constructor.name is "Code"
@@ -109,12 +119,14 @@ module.exports = class ScopeLinter
             node.eachChild(@visit)
         undefined
 
-    visitClass: (node) =>
+    visitClass: (node, assigned = false) =>
         if node.variable? and node.variable.isAssignable()
             # a named class produces a variable in the local scope and in this
             # regard acts like an assignment statement
-            @visit(node.variable)
-            if @declaration
+            @newDeclaration "Class", node.variable, =>
+                @visit(node.variable)
+
+            if assigned
                 # allow named classes that are part of assignment statements
                 # without requiring their names to be read
                 @scope.read(node.variable.base.value, node.variable)
@@ -131,19 +143,27 @@ module.exports = class ScopeLinter
                 line: node.body.locationData["first_line"]
                 column: node.body.locationData["first_column"]
             }))
-            for param in node.params or []
-                @newDeclaration type, param, =>
-                    @visit(param.name)
-                @visit(param.value)
+            @scope.read("arguments", node)  # arguments is always-read
+            @newDeclaration type, node, =>
+                for {name, value} in node.params or []
+                    if name.constructor.name is "IdentifierLiteral"
+                        # this is not a value, so visit doesn't work
+                        @scope.write(name.value, name, @declaration)
+                        @newDeclaration =>
+                            @visit(value)
+                    else
+                        @visit(name)
             @visit(node.body)
         undefined
 
     visitFor: (node) =>
         @newDeclaration "For", node, =>
-            @visit(node.name)
-            @visit(node.index)
-        node.eachChild(@visit)
-        undefined
+            if node.name?
+                @scope.write(node.name.value, node.name, @declaration)
+            if node.index?
+                @scope.write(node.index.value, node.index, @declaration)
+            @newDeclaration =>
+                node.eachChild(@visit)
 
     visitOp: (node) =>
         # unary ops ++ and -- should perform both a read and a write
@@ -151,15 +171,16 @@ module.exports = class ScopeLinter
             if not node.first.hasProperties()
                 @scope.write(node.first.base.value, node.first,
                              new Declaration("Variable", node))
-            @visit(node.first)
+            @newDeclaration =>
+                @visit(node.first)
         else
             node.eachChild(@visit)
 
     visitTry: (node) =>
         @visit(node.attempt)
-        if err = node.errorVariable?
+        if (err = node.errorVariable)?
             @newDeclaration "Exception", err, =>
-                @visit(err)
+                @scope.write(err.value, err, @declaration)
         @visit(node.recovery)
         @visit(node.ensure)
         undefined

@@ -1,49 +1,44 @@
 "use strict"
-{nodes} = require "coffee-script"
-
-ScopeLinter = require "../../src/ScopeLinter"
+lint = require "../helper"
 
 
-describe "ScopeLinter/shadow", ->
+describe.only "ScopeLinter/shadow", ->
+    defaults = {
+        shadow: "error"
+        shadow_builtins: false
+    }
+
+
     it "matches trivial cases", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             (foo) ->
                 undefined
-            """
-        ), {
-            shadow: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(1)
+        .shadow("foo")
 
 
     it "ignores object literals", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             -> (bar = {foo: "bar2"})
             -> ({baz} = {"foo": "bar3"})
-            """
-        ), {
-            shadow: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "allows do statements", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = bar = "baz"
             do (foo, bar) ->
                 undefined
-            """
-        ), {
-            shadow: true
-        }).should.have.length(0)
+        """, defaults)
+        .total(0)
 
 
     it "matches destructured assignments", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             (foo...) ->
                 undefined
@@ -57,64 +52,49 @@ describe "ScopeLinter/shadow", ->
                 undefined
             ([{foo}, {baz}] = [{"foo": "bar4"}, {"baz": "bar5"}]) ->
                 undefined
-            """
-        ), {
-            shadow: true
-        }).should.have.length(6)
+        """, defaults)
+        .total(6)
+        .shadow("foo", count: 6)
 
 
     it "allows exceptions when instructed", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             (foo) ->
                 undefined
-            """
-        ), {
-            shadow: true
-            shadow_exceptions: ["foo"]
-        }).should.have.length(0)
+        """, defaults, shadow_exceptions: ["foo"])
+        .total(0)
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             (foo) ->
                 undefined
-            """
-        ), {
-            shadow: true
-            shadow_exceptions: ["f.."]
-        }).should.have.length(0)
+        """, defaults, shadow_exceptions: ["f.."])
+        .total(0)
 
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             (foo) ->
                 undefined
-            """
-        ), {
-            shadow: true
-            shadow_exceptions: ["bar"]
-        }).should.have.length(1)
+        """, defaults, shadow_exceptions: ["bar"])
+        .total(1)
+        .shadow("foo")
 
 
     it "matches multi-scope overwrites", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             foo = "bar"
             (foo) ->
                 (foo) ->
                     undefined
                 undefined
-            """
-        ), {
-            shadow: true
-        }).should.have.length(2)
+        """, defaults)
+        .total(2)
+        .shadow("foo", count: 2)
 
 
     it "matches classes and functions", ->
-        ScopeLinter.default().lint(nodes(
-            """
+        lint("""
             cb = null
             class cls
 
@@ -123,68 +103,36 @@ describe "ScopeLinter/shadow", ->
                 cls = "foo"
             ) ->
                 undefined
-            """
-        ), {
-            shadow: true
-        }).should.have.length(2)
+        """, defaults)
+        .total(2)
+        .shadow("cls")
+        .shadow("cb")
 
 
-    it "respects builtins when instructed", ->
-        ScopeLinter.default().lint(nodes(
-            """
+    it "matches builtins", ->
+        lint("""
             (exports) -> "foo"
-
             (module) -> "foo"
-            """
-        ), {
-            environments: ["commonjs"]
-            shadow: true
-        }).should.have.length(0)
+        """, defaults, environments: ["commonjs"])
+        .total(2)
+        .shadow("exports")
+        .shadow("module")
 
 
-        ScopeLinter.default().lint(nodes(
-            """
-            (exports) -> "foo"
-
-            (module) -> "foo"
-            """
-        ), {
-            environments: ["commonjs"]
-            shadow: true
-            shadow_builtins: true
-        }).should.have.length(2)
+    it.only "matches assigning to builtins", ->
+        lint("""
+            exports = "foo"
+            module = "foo"
+        """, defaults, environments: ["commonjs"])
+        .total(2)
+        .shadow("exports")
+        .shadow("module")
 
 
-    it "respects implicit builtins", ->
-        ScopeLinter.default().lint(nodes(
-            """
+    it "doesn't shadow arguments or this", ->
+        lint("""
             foo = ->
                 bar = ->
                     undefined
-            """
-        ), {
-            environments: ["commonjs"]
-            shadow: true
-            shadow_builtins: true
-        }).should.have.length(0)
-
-
-    it "matches assignments to builtins when instructed", ->
-        ScopeLinter.default().lint(nodes(
-            """
-            exports = "foo"
-            """
-        ), {
-            environments: ["commonjs"]
-            shadow: true
-        }).should.have.length(0)
-
-        ScopeLinter.default().lint(nodes(
-            """
-            module = "foo"
-            """
-        ), {
-            environments: ["commonjs"]
-            shadow: true
-            shadow_builtins: true
-        }).should.have.length(1)
+        """, defaults)
+        .total(0)

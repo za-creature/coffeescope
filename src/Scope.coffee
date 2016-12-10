@@ -3,48 +3,51 @@ Variable = require "./variable"
 
 
 module.exports = class Scope
-    children: []
     constructor: (@parent = null) ->
         if @parent?
             @parent.children.push(this)
 
-    reads: Object.create(null)
+        @children = []
+        @reads = Object.create(null)
+        @writes = Object.create(null)
+        @symbols = Object.create(null)  # stores the symbol table for locals
+
     read: (name, node) =>
         if not @reads[name]?
             @reads[name] = []
         @reads[name].push(node)
         undefined
 
-    writes: Object.create(null)
     write: (name, node, declaration) =>
         if not @writes[name]?
             @writes[name] = []
         @writes[name].push([node, declaration])
         undefined
 
-    symbols: Object.create(null)  # stores the symbol table for locals
     variable: (name) => @symbols[name] or @parent?.variable(name)
 
     errors: (options) =>
         results = []
         error = ({name, message, type, location}) ->
+            level = options[type]
             for pattern in options["#{type}_except"] or []
                 if name.match(new RegExp("^#{pattern}$"))
-                    return
+                    level = "ignore"
+                    break
+
             results.push({
                 symbol: name
                 message
                 code: type.toUpperCase()
-                level: options[type]
+                level
                 location
-                lineNumber: local[0].locationData.first_line + 1
+                lineNumber: location.first_line + 1
             })
 
         # figure out what writes create new symbols in the current scope and
         # what writes overwrite values from parent scopes
         for name, writes of @writes
             local = null
-            console.log(writes)
 
             for args in writes
                 [node, declaration] = args
@@ -94,15 +97,16 @@ module.exports = class Scope
                     })
 
         for scope in @children
-            for error in scope.errors(options)
-                results.push(error)
+            for err in scope.errors(options)
+                results.push(err)
 
         for name, ref of @symbols
             parent = @parent?.variable(name)
             if parent? and parent isnt ref
                 # this variable is shadowing another (possibly builtin)
                 # variable from a parent scope
-                if parent.type is "Builtin"
+                console.log(name, parent.declaration.type)
+                if parent.declaration.type is "Builtin"
                     if options["shadow_builtins"] is false or (
                         options["shadow_builtins"] is "arguments" and \
                         ref.declaration.type not in ["Do", "Argument"]
@@ -124,15 +128,17 @@ module.exports = class Scope
                         location: ref.location
                     })
 
-            if not ref.reads.length
-                # this variable was never read in this scope or any of the
-                # subscopes it was visible in; as such, it may be removed
+            if not ref.reads.length and ref.declaration.type isnt "Builtin"
+                # this non-builtin variable was never read in this scope or any
+                # of the subscopes it was visible in; as such, it may be
+                # removed without affecting the compiled code
                 for write, index in ref.writes
                     error({
                         name,
                         message: "Identifier \"#{name}\" is assigned to but
-                                  never read" + if index then "(first defined
-                                  on line #{ref.location.first_line + 1})"
+                                  never read" + if index then " (first defined
+                                  on line #{ref.location.first_line + 1})" \
+                                  else ""
                         type: "unused"
                         location: ref.location
                     })
