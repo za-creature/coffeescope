@@ -15,6 +15,9 @@
     "variables"
   ],
   "author": "Radu Dan <za_creature@yahoo.com> (https://github.com/za-creature)",
+  "contributors": [
+    "Nick McCready <nemtcan@gmail.com> (https://codemonkeyseedo.blogspot.com)"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/za-creature/coffeescope.git"

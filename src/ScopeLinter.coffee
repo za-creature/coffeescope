@@ -200,6 +200,7 @@ module.exports = class ScopeLinter
                 if \
                         @reading or \
                         prop.context is "object"
+                    @visit(prop.variable)
                     @visit(prop.value)
                 else
                     @visitAssignment(prop.variable, {source: prop.value})
