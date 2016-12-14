@@ -273,3 +273,16 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(0)
+
+
+    it "matches composed string field objects", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            field = 'howdy'
+
+            obj =
+              "#{field}": 1
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
