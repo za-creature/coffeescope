@@ -286,3 +286,23 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(0)
+
+
+    it "matches this assignments", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            normalize = (node) -> 'foo'
+
+            class Poll extends Driver
+
+              constructor: ->
+                super
+                @deferrals = {}
+
+              defer: (node) ->
+                @deferrals[normalize(node)] = _.now()
+                return
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)

@@ -231,7 +231,9 @@ module.exports = class ScopeLinter
         undefined
 
     visitValue: (node) =>
-        if node.base.constructor.name in ["Literal", "IdentifierLiteral"]
+        if node.base.constructor.name in [
+            "Literal", "ThisLiteral", "IdentifierLiteral"
+        ]
             # simple (single-valued) object ...
 
             if node.base.isAssignable()
