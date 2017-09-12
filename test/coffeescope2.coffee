@@ -7,15 +7,15 @@ describe "coffeescope2", ->
     it "should be a coffeelint AST module", ->
         Coffeescope2 = require "../src"
         Coffeescope2.should.be.an.instanceof(Function)
-        Coffeescope2::should.have.deep.property("rule.name", "check_scope")
-        Coffeescope2::should.have.deep.property("rule.description")
-        Coffeescope2::should.have.deep.property("rule.message")
+        Coffeescope2::rule.should.have.property("name", "check_scope")
+        Coffeescope2::rule.should.have.property("description")
+        Coffeescope2::rule.should.have.property("message")
         Coffeescope2::should.have.property("lintAST")
 
 
     it "should default to warn", ->
         Coffeescope2 = require "../src"
-        Coffeescope2::should.have.deep.property("rule.level", "warn")
+        Coffeescope2::rule.should.have.property("level", "warn")
 
 
     it "should forward the root and only the relevant config", ->
