@@ -59,7 +59,8 @@ module.exports = class Coffeescope2
                         <samp>protractor</samp>,
                         <samp>shared-node-browser</samp>,
                         <samp>webextension</samp>,
-                        <samp>greasemonkey</samp>.
+                        <samp>greasemonkey</samp>,
+                        <samp>cake</samp>.
                     This influences all the rules defined by this module as it
                     injects global variables within a file's scope.  The
                     default is <samp>["builtin"]</samp> which includes all es3
