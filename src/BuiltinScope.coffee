@@ -1,6 +1,12 @@
 "use strict"
 globals = require "globals"
 
+# support Cakefile
+globals.cake =
+    task: false
+    option: false
+    invoke: false
+
 Scope = require "./Scope"
 
 
