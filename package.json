@@ -45,7 +45,7 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "coffee-coverage": "^2.0.1",
-    "coffee-script": "^1.10.0",
+    "coffeescript": "^2.0.1",
     "coffeelint": "latest",
     "coffeelint-advanced-colon-assignment-spacing": "^1.0.0",
     "coffeelint-braces-padding": "^0.1.5",
