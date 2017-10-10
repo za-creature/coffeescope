@@ -1,5 +1,5 @@
 "use strict"
-{nodes} = require "coffee-script"
+{nodes} = require "coffeescript"
 
 ScopeLinter = require "../../src/ScopeLinter"
 
