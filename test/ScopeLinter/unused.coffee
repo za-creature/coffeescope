@@ -1,5 +1,5 @@
 "use strict"
-{nodes} = require "coffee-script"
+{nodes} = require "coffeescript"
 
 ScopeLinter = require "../../src/ScopeLinter"
 
@@ -296,7 +296,7 @@ describe "ScopeLinter/unused", ->
             class Poll extends Driver
 
               constructor: ->
-                super
+                super arguments...
                 @deferrals = {}
 
               defer: (node) ->
