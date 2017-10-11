@@ -342,7 +342,7 @@ describe "ScopeLinter/unused", ->
               least: (x, y) -> if x < y then x else y
             """
         ), {
-            unused_variables: true
+            unused_classes: true
         }).should.have.length(0)
 
     it "handles export splat from an import", ->
@@ -373,4 +373,5 @@ describe "ScopeLinter/unused", ->
             """
         ), {
             unused_variables: true
+            unused_classes: true
         }).should.have.length(0)
