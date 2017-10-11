@@ -306,3 +306,71 @@ describe "ScopeLinter/unused", ->
         ), {
             unused_variables: true
         }).should.have.length(0)
+
+    it "handles export of a default global", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            export default Math
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+    it "handles export of a function", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            square = (x) -> x * x
+            export { square }
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+    it "handles export of an inline function", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            export square = (x) -> x * x
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+    it "handles export of an inline class", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            export class Mathematics
+              least: (x, y) -> if x < y then x else y
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+    it "handles export splat from an import", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            export * from 'underscore'
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+    it "handles export from a destructured import", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            export { max, min } from 'underscore'
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
+
+    it "handles export of a default class and an aliased function", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            class Mathematics
+              least: (x, y) -> if x < y then x else y
+            square = (x) -> x * x
+            export { Mathematics as default, square as squareAlias }
+            """
+        ), {
+            unused_variables: true
+        }).should.have.length(0)
