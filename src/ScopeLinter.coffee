@@ -268,6 +268,15 @@ module.exports = class ScopeLinter
         if node.clause.specifiers
             for specifier in node.clause.specifiers
                 @scope.identifierRead(specifier.original.value, specifier)
+        else
+            switch node.clause.constructor.name
+                when 'Assign'
+                    @scope.identifierRead(node.clause.variable.value,
+                                          node.clause.value)
+                when 'Class'
+                    @scope.identifierRead(node.clause.variable.base.value,
+                                          node.clause.variable)
+        node.eachChild(@visit)
         undefined
 
 
