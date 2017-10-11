@@ -264,5 +264,11 @@ module.exports = class ScopeLinter
             node.eachChild(@visit)
         undefined
 
+    visitExportNamedDeclaration: (node) =>
+        if node.clause.specifiers
+            for specifier in node.clause.specifiers
+                @scope.identifierRead(specifier.original.value, specifier)
+        undefined
+
 
 defaultLinter = new ScopeLinter()
