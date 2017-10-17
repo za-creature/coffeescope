@@ -296,8 +296,8 @@ describe "ScopeLinter/undefined", ->
     it "handles imports", ->
         ScopeLinter.default().lint(nodes(
             """
-            import Foo from 'foo'
-            Foo
+            import _ from 'underscore'
+            _
             """
         ), {
             undefined: true
@@ -305,8 +305,8 @@ describe "ScopeLinter/undefined", ->
 
         ScopeLinter.default().lint(nodes(
             """
-            import {Foo as Bar} from 'foo'
-            Bar
+            import * as underscore from 'underscore'
+            underscore
             """
         ), {
             undefined: true
@@ -314,9 +314,37 @@ describe "ScopeLinter/undefined", ->
 
         ScopeLinter.default().lint(nodes(
             """
-            import {Foo, Bar} from 'foo'
-            Foo
-            Bar
+            import { now } from 'underscore'
+            now
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            import { now as currentTimestamp } from 'underscore'
+            currentTimestamp
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            import { first, last } from 'underscore'
+            first
+            last
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            import utilityBelt, { each } from 'underscore'
+            utilityBelt
+            each
             """
         ), {
             undefined: true

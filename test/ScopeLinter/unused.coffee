@@ -310,7 +310,7 @@ describe "ScopeLinter/unused", ->
      it "handles imports", ->
          ScopeLinter.default().lint(nodes(
              """
-             import Foo from 'foo'
+             import _ from 'underscore'
              """
          ), {
              unused_variables: true
@@ -318,7 +318,7 @@ describe "ScopeLinter/unused", ->
 
          ScopeLinter.default().lint(nodes(
              """
-             import {Foo as Bar} from 'foo'
+             import * as underscore from 'underscore'
              """
          ), {
              unused_variables: true
@@ -326,7 +326,31 @@ describe "ScopeLinter/unused", ->
 
          ScopeLinter.default().lint(nodes(
              """
-             import {Foo, Bar} from 'foo'
+             import { now } from 'underscore'
+             """
+         ), {
+             unused_variables: true
+         }).should.have.length(1)
+
+         ScopeLinter.default().lint(nodes(
+             """
+             import { now as currentTimestamp } from 'underscore'
+             """
+         ), {
+             unused_variables: true
+         }).should.have.length(1)
+
+         ScopeLinter.default().lint(nodes(
+             """
+             import { first, last } from 'underscore'
+             """
+         ), {
+             unused_variables: true
+         }).should.have.length(2)
+
+         ScopeLinter.default().lint(nodes(
+             """
+             import utilityBelt, { each } from 'underscore'
              """
          ), {
              unused_variables: true
