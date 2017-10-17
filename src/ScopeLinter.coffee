@@ -264,6 +264,28 @@ module.exports = class ScopeLinter
             node.eachChild(@visit)
         undefined
 
+    visitImportDeclaration: (node) =>
+        # Could be just a raw import, without a clause, if so, skip it,
+        # as no variable is created.
+        if node.clause?
+            if node.clause.defaultBinding?
+                @scope.identifierWritten(node.clause.defaultBinding.identifier,
+                                         node,
+                                         'Variable')
+            if node.clause.namedImports?
+                # ImportSpecifierList
+                if node.clause.namedImports.specifiers
+                    for specifier in node.clause.namedImports.specifiers
+                         @scope.identifierWritten(specifier.identifier,
+                                                  node,
+                                                  'Variable')
+                # ImportNamespaceSpecifier
+                else if node.clause.namedImports.alias
+                     @scope.identifierWritten(node.clause.namedImports.alias.value,
+                                              node,
+                                              'Variable')
+        undefined
+
     visitExportNamedDeclaration: (node) =>
         if node.clause.specifiers
             for specifier in node.clause.specifiers
