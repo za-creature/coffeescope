@@ -292,3 +292,32 @@ describe "ScopeLinter/undefined", ->
             undefined: true,
             unused: true
         }).should.have.length(0)
+
+    it "handles imports", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            import Foo from 'foo'
+            Foo
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            import {Foo as Bar} from 'foo'
+            Bar
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            import {Foo, Bar} from 'foo'
+            Foo
+            Bar
+            """
+        ), {
+            undefined: true
+        }).should.have.length(0)

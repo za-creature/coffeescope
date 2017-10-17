@@ -307,6 +307,31 @@ describe "ScopeLinter/unused", ->
             unused_variables: true
         }).should.have.length(0)
 
+     it "handles imports", ->
+         ScopeLinter.default().lint(nodes(
+             """
+             import Foo from 'foo'
+             """
+         ), {
+             unused_variables: true
+         }).should.have.length(1)
+
+         ScopeLinter.default().lint(nodes(
+             """
+             import {Foo as Bar} from 'foo'
+             """
+         ), {
+             unused_variables: true
+         }).should.have.length(1)
+
+         ScopeLinter.default().lint(nodes(
+             """
+             import {Foo, Bar} from 'foo'
+             """
+         ), {
+             unused_variables: true
+         }).should.have.length(2)
+
     it "handles export of a default global", ->
         ScopeLinter.default().lint(nodes(
             """
