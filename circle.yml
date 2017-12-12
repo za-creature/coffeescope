@@ -1,6 +1,6 @@
 machine:
-  post:
-    - npm install -g npm@3.x.x
+    node:
+        version: 8.9.3
 dependencies:
     override:
         - npm prune

@@ -17,15 +17,15 @@ describe "BuiltinScope", ->
 
 
     it "accepts single environments", ->
-        expect(spawn("es6")).to.have.property("Promise")
+        expect(spawn("es2015")).to.have.property("Promise")
 
 
     it "accepts single-value arrays", ->
-        expect(spawn(["es6"])).to.have.property("Promise")
+        expect(spawn(["es2015"])).to.have.property("Promise")
 
 
     it "merges multiple environments", ->
-        result = spawn(["es6", "commonjs"])
+        result = spawn(["es2015", "commonjs"])
 
         expect(result).to.have.property("Promise")
         expect(result).to.have.property("exports")
@@ -34,7 +34,7 @@ describe "BuiltinScope", ->
     it "ignores invalid / unknown environments", ->
         expect(spawn("foo")).to.have.property("this")
         expect(spawn(["foo", "bar"])).to.have.property("this")
-        expect(spawn(["baz", "es6"])).to.have.property("Promise")
+        expect(spawn(["baz", "es2015"])).to.have.property("Promise")
         expect(spawn(["foo"], {"bar": true})).to.have.property("bar")
 
 
@@ -46,5 +46,5 @@ describe "BuiltinScope", ->
 
     it "always includes `this`", ->
         expect(spawn()).to.have.property("this")
-        expect(spawn("es3")).to.have.property("this")
-        expect(spawn(["es5", "es6"])).to.have.property("this")
+        expect(spawn("builtin")).to.have.property("this")
+        expect(spawn(["es5", "es2015"])).to.have.property("this")

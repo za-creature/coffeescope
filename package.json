@@ -17,7 +17,8 @@
   "author": "Radu Dan <za_creature@yahoo.com> (https://github.com/za-creature)",
   "contributors": [
     "Nick McCready <nemtcan@gmail.com> (https://codemonkeyseedo.blogspot.com)",
-    "Daniel Bayley <daniel.bayley@me.com> (https://github.com/danielbayley)"
+    "Daniel Bayley <daniel.bayley@me.com> (https://github.com/danielbayley)",
+    "Allan Bazinet (https://github.com/bazineta)"
   ],
   "repository": {
     "type": "git",
@@ -40,24 +41,23 @@
     "lib"
   ],
   "dependencies": {
-    "globals": "^10.1.0"
+    "globals": "^11.1.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "coffee-coverage": "^2.0.1",
-    "coffeescript": "^2.0.1",
+    "coffeescript": "^2.1.0",
     "coffeelint": "latest",
     "coffeelint-advanced-colon-assignment-spacing": "^1.0.0",
     "coffeelint-braces-padding": "^0.1.5",
     "coffeelint-limit-newlines": "0.0.2",
-    "coffeelint-no-code-after-return": "0.0.4",
     "coffeelint-prefer-double-quotes": "^0.1.0",
     "coffeescope2": "latest",
-    "coveralls": "^2.11.12",
-    "istanbul": "^0.4.3",
-    "mocha": "^3.0.0",
-    "mocha-junit-reporter": "^1.11.1",
-    "proxyquire": "^1.7.10"
+    "coveralls": "^3.0.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^4.0.1",
+    "mocha-junit-reporter": "^1.15.0",
+    "proxyquire": "^1.8.0"
   },
   "engines": {
     "npm": "*",

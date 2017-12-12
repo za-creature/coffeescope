@@ -130,10 +130,6 @@
         "unused_variables": true,
         "unused_arguments": false
     },
-    "no_code_after_return": {
-        "module": "coffeelint-no-code-after-return",
-        "level": "error"
-    },
     "prefer_double_quotes": {
         "module": "coffeelint-prefer-double-quotes",
         "level": "warn"
