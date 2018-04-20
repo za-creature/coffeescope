@@ -141,9 +141,13 @@ module.exports = class Scope
                     @options["unused_variables"]) or \
                     type is "Class" and @options["unused_classes"] or \
                     type is "Argument" and @options["unused_arguments"]
-            then do ->
+            then do =>
                 if reads.length or innerReads.length
                     return  # variable was read at least once
+
+                for exception in @options["unused_exceptions"] or []
+                    if (new RegExp("^#{exception}$")).test(name)
+                        return  # variable is allowed to be unused
 
                 for {locationData}, index in writes.concat(innerWrites)
                     # issue a variable-is-assigned-but-never-read warning every

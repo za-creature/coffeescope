@@ -128,7 +128,8 @@
         "hoist_local": false,
         "hoist_parent": true,
         "unused_variables": true,
-        "unused_arguments": false
+        "unused_arguments": false,
+        "unused_exceptions": ["_.+"]
     },
     "prefer_double_quotes": {
         "module": "coffeelint-prefer-double-quotes",
