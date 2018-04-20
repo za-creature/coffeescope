@@ -424,3 +424,30 @@ describe "ScopeLinter/unused", ->
             unused_variables: true
             unused_classes: true
         }).should.have.length(0)
+
+    it "allows exceptions when instructed", ->
+        ScopeLinter.default().lint(nodes(
+            """
+            _foo = "bar"
+            class _UnusedKlass
+              method: (_arg) ->
+            """
+        ), {
+            unused_variables: true
+            unused_arguments: true
+            unused_classes: true
+            unused_exceptions: ["_.+"]
+        }).should.have.length(0)
+
+        ScopeLinter.default().lint(nodes(
+            """
+            _foo = "bar"
+            class _UnusedKlass
+              method: (_arg) ->
+            """
+        ), {
+            unused_variables: true
+            unused_arguments: true
+            unused_classes: true
+            unused_exceptions: ["_..."]
+        }).should.have.length(1) # only catches the unused class
