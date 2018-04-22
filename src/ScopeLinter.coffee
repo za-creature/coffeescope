@@ -143,7 +143,8 @@ module.exports = class ScopeLinter
         # a named class produces a variable in the local scope and in this
         # regard acts like an assignment statement
         if node.variable? and node.variable.isAssignable()
-            if node.variable.shouldCache()
+            # fallback to support coffeescript 1.x
+            if node.variable.shouldCache?() or node.variable.isComplex?()
                 # composite class definition; treat as a read for base value
                 @visit(node.variable)
             else
