@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/za-creature/coffeescope",
   "license": "MIT",
-  "main": "lib",
+  "main": "src",
   "scripts": {
     "prepublish": "coffee -o lib -c src",
     "lint": "coffeelint src/ && coffeelint test/",
@@ -38,7 +38,7 @@
     "coverage": "istanbul report lcov"
   },
   "files": [
-    "lib"
+    "src"
   ],
   "dependencies": {
     "globals": "^11.1.0"
@@ -46,7 +46,7 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "coffee-coverage": "^2.0.1",
-    "coffeescript": "^2.1.0",
+    "coffeescript": "^1.7.0",
     "coffeelint": "latest",
     "coffeelint-advanced-colon-assignment-spacing": "^1.0.0",
     "coffeelint-braces-padding": "^0.1.5",

@@ -117,7 +117,7 @@ module.exports = class Coffeescope2
                 <dt><code>shadow_exceptions</code></dt>
                 <dd>A list of regular expressions that further customizes the
                     behavior of <code>shadow</code> by allowing one or more
-                    names to be extempt from shadowing warnings. The default
+                    names to be exempt from shadowing warnings. The default
                     value is <samp>["err", "next"]</samp> to allow nesting of
                     Node.JS-style continuations. To be skipped, the name must
                     match the entire expression:
@@ -184,6 +184,33 @@ module.exports = class Coffeescope2
                     this warning. Defaults to <samp>true</samp> because of
                     historical reasons and the low rate of false positives
                     generated on most codebases.</dd>
+
+                <dt><code>unused_exceptions</code></dt>
+                <dd>A list of regular expressions that further customizes the
+                    behavior of <code>unused_</code> by allowing one or more
+                    names to be exempt from unused warnings. The default value
+                    is <samp>["_.+"]</samp> to skip names starting with
+                    underscores. To be skipped, the name must match the entire
+                    expression:
+                    <ul>
+                        <li>
+                            <samp>"ba."</samp>
+                            will match
+                                <code>"bar"</code> and
+                                <code>"baz"</code>
+                            but not
+                                <code>"bard"</code> or
+                                <code>"foobar"</code>.
+                        </li>
+                        <li>
+                            <samp>"ba.*"</samp>
+                            will match
+                                <code>"ba"</code> and
+                                <code>"bar"</code> and
+                                <code>"bard"</code>.
+                        </li>
+                    </ul>
+                </dd>
             </dl>
         """
         level: "warn"
@@ -198,7 +225,7 @@ module.exports = class Coffeescope2
 
         shadow: true  # warn when overwriting a variable from outer scope
         shadow_builtins: false  # don't warn when "assigning to" a superglobal
-        shadow_exceptions: ["err", "next"]  # list of args that may be shadowed
+        shadow_exceptions: ["err", "next"] # list of args that may be shadowed
 
         undefined: true  # warn when accessing an undefined variable
         hoist_local: true  # allow same-scope hoisting
@@ -207,6 +234,7 @@ module.exports = class Coffeescope2
         unused_variables: true  # warn when a variable is not accessed
         unused_arguments: false  # warn when an argument is not accessed
         unused_classes: true  # warn when a class is not instantiated or copied
+        unused_exceptions: ["_.+"] # list of names that can be unused
 
     lintAST: (root, {config, createError}) ->
         for spec in ScopeLinter.default().lint(root, config[@rule.name])
