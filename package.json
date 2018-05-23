@@ -41,23 +41,23 @@
     "lib"
   ],
   "dependencies": {
-    "globals": "^11.1.0"
+    "globals": "^11.5.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "coffee-coverage": "^2.0.1",
-    "coffeescript": "^2.1.0",
+    "coffee-coverage": "^3.0.0",
+    "coffeescript": "^2.3.0",
     "coffeelint": "latest",
     "coffeelint-advanced-colon-assignment-spacing": "^1.0.0",
     "coffeelint-braces-padding": "^0.1.5",
     "coffeelint-limit-newlines": "0.0.2",
     "coffeelint-prefer-double-quotes": "^0.1.0",
     "coffeescope2": "latest",
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.0.1",
     "istanbul": "^0.4.5",
-    "mocha": "^4.0.1",
-    "mocha-junit-reporter": "^1.15.0",
-    "proxyquire": "^1.8.0"
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.17.0",
+    "proxyquire": "^2.0.1"
   },
   "engines": {
     "npm": "*",
