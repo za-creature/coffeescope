@@ -310,6 +310,14 @@ describe "ScopeLinter/unused", ->
      it "handles imports", ->
          ScopeLinter.default().lint(nodes(
              """
+             import 'underscore'
+             """
+         ), {
+             unused_variables: true
+         }).should.have.length(0)
+
+         ScopeLinter.default().lint(nodes(
+             """
              import _ from 'underscore'
              """
          ), {

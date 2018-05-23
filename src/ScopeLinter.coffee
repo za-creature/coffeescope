@@ -182,7 +182,10 @@ module.exports = class ScopeLinter
         # for, the body is contained within the for block
         comprehension = true
         if node.body.locationData?
-            for prop in ["first_line", "first_column", "last_line", "last_column"]
+            for prop in ["first_line", "first_column",
+                         "last_line", "last_column"
+            ]
+                ### istanbul ignore else ### # coffeescript 1.0 compatibility
                 if node.locationData[prop] isnt node.body.locationData[prop]
                     comprehension = false
                     break
@@ -269,23 +272,25 @@ module.exports = class ScopeLinter
     visitImportDeclaration: (node) =>
         # Could be just a raw import, without a clause, if so, skip it,
         # as no variable is created.
+        ### istanbul ignore else ### # coffeescript 1.0 compatibility
         if node.clause?
             if node.clause.defaultBinding?
                 @scope.identifierWritten(node.clause.defaultBinding.identifier,
                                          node,
-                                         'Variable')
+                                         "Variable")
             if node.clause.namedImports?
                 # ImportSpecifierList
                 if node.clause.namedImports.specifiers
                     for specifier in node.clause.namedImports.specifiers
-                         @scope.identifierWritten(specifier.identifier,
-                                                  node,
-                                                  'Variable')
+                        @scope.identifierWritten(specifier.identifier,
+                                                 node,
+                                                 "Variable")
                 # ImportNamespaceSpecifier
-                else if node.clause.namedImports.alias
-                     @scope.identifierWritten(node.clause.namedImports.alias.value,
-                                              node,
-                                              'Variable')
+                else
+                    alias = node.clause.namedImports.alias
+                    @scope.identifierWritten(alias.value,
+                                             node,
+                                             "Variable")
         undefined
 
     visitExportNamedDeclaration: (node) =>
@@ -294,10 +299,10 @@ module.exports = class ScopeLinter
                 @scope.identifierRead(specifier.original.value, specifier)
         else
             switch node.clause.constructor.name
-                when 'Assign'
+                when "Assign"
                     @scope.identifierRead(node.clause.variable.value,
                                           node.clause.value)
-                when 'Class'
+                when "Class"
                     @scope.identifierRead(node.clause.variable.base.value,
                                           node.clause.variable)
         node.eachChild(@visit)
