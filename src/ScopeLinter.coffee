@@ -181,10 +181,11 @@ module.exports = class ScopeLinter
         # body has the same location as the node itself, whereas for a regular
         # for, the body is contained within the for block
         comprehension = true
-        for prop in ["first_line", "first_column", "last_line", "last_column"]
-            if node.locationData[prop] isnt node.body.locationData[prop]
-                comprehension = false
-                break
+        if node.body.locationData?
+            for prop in ["first_line", "first_column", "last_line", "last_column"]
+                if node.locationData[prop] isnt node.body.locationData[prop]
+                    comprehension = false
+                    break
 
         if node.name?
             @visitAssignment(node.name, {comprehension})
