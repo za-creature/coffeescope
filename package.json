@@ -1,6 +1,6 @@
 {
   "name": "coffeescope2",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "coffeelint plugin that handles variables and their scope",
   "keywords": [
     "coffee",
@@ -18,7 +18,8 @@
   "contributors": [
     "Nick McCready <nemtcan@gmail.com> (https://codemonkeyseedo.blogspot.com)",
     "Daniel Bayley <daniel.bayley@me.com> (https://github.com/danielbayley)",
-    "Allan Bazinet (https://github.com/bazineta)"
+    "Allan Bazinet (https://github.com/bazineta)",
+    "Zach Millman <zach.millman@gmail.com> (https://medium.com/@zmillman)"
   ],
   "repository": {
     "type": "git",
